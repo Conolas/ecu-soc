@@ -1,14 +1,16 @@
-# Sheet 02 — Kaushal: `i2c_sensor_subsystem`, `bus_interconnect`, Ibex sim harness, deputy lead
+# Sheet 02 — Kaushal: `i2c_sensor_subsystem`, Ibex sim harness, deputy lead
 
 Read `00_ECU_Interface_Contract_v1.0.md` first.
 
-**Role:** second pillar. You own the sensor input of the whole system and the bus that lets the CPU talk to everything. You are also the **on-site deputy**: you review the others' PRs and keep them unblocked while Conolas is remote.
+**Role:** second pillar. You own the sensor input of the whole system and the CPU test harness. You are also the **on-site deputy**: you review the others' PRs and keep them unblocked while Conolas is remote.
+
+**Ownership change (4 Oct 2026):** `bus_interconnect` now belongs to **Vedam** (Sheet 04 §E). You no longer build it. You review it and your Ibex harness (§C) is its acceptance test.
 
 | # | Deliverable | Done when |
 |---|---|---|
 | A | `i2c_sensor_subsystem` (I2C master + MPU-6050 sequencer + I2C regs) | reads a 14-byte sample every tick, on model and on real MPU-6050 |
-| B | `bus_interconnect` | all address/protocol tests pass with ROM/RAM/regs |
-| C | Ibex simulation harness (`tb_cpu_bus`) | test firmware runs on Ibex through your bus |
+| B | *(moved to Vedam: `bus_interconnect`, Sheet 04 §E)* | – |
+| C | Ibex simulation harness (`tb_cpu_bus`) | test firmware runs on Ibex through Vedam's bus |
 | D | Deputy: PR reviews | 24 h turnaround |
 
 ---
@@ -86,41 +88,9 @@ If a tick arrives while busy, ignore it (the timer flags the overrun via `imu_bu
 
 ---
 
-## B. `bus_interconnect`
+## B. `bus_interconnect` — moved to Vedam
 
-### B.1 Ports (frozen)
-
-| Group | Ports |
-|---|---|
-| Common | `clk`, `rst_n` |
-| Ibex instr (from CPU) | `instr_req_i`, `instr_addr_i[31:0]` → `instr_gnt_o`, `instr_rvalid_o`, `instr_rdata_o[31:0]`, `instr_err_o` |
-| Ibex data (from CPU) | `data_req_i`, `data_we_i`, `data_be_i[3:0]`, `data_addr_i[31:0]`, `data_wdata_i[31:0]` → `data_gnt_o`, `data_rvalid_o`, `data_rdata_o[31:0]`, `data_err_o` |
-| ROM instr port | `rom_ia_req_o`, `rom_ia_addr_o[12:0]`, `rom_ia_rdata_i[31:0]` |
-| ROM data-read | `rom_sel_o`, `rom_addr_o[12:0]`, `rom_rdata_i[31:0]` |
-| RAM | `ram_sel_o`, `ram_we_o`, `ram_be_o[3:0]`, `ram_addr_o[11:0]`, `ram_wdata_o[31:0]`, `ram_rdata_i[31:0]` |
-| Each bank `tmr`, `i2c`, `sens`, `pid`, `pwm`, `saf` | `<b>_sel_o`, `<b>_we_o`, `<b>_be_o[3:0]`, `<b>_addr_o[11:0]`, `<b>_wdata_o[31:0]`, `<b>_rdata_i[31:0]` |
-
-### B.2 Behaviour
-- **Instruction side:** only ROM is fetchable. `instr_gnt_o = instr_req_i` (same cycle); `instr_rvalid_o` next cycle with `rom_ia_rdata_i`. Any address outside ROM ⇒ `instr_rvalid_o` with `instr_err_o=1`.
-- **Data side:** decode `data_addr_i` per the memory map (contract §4). `data_gnt_o = data_req_i` (same cycle). One cycle later: `data_rvalid_o=1` and `data_rdata_o` = the **registered** selected slave read data. Register the select (`sel_q`) so back-to-back accesses return the right data.
-- **Writes also get `rvalid`.** Ibex waits for it.
-- **Errors:** unmapped address, or write to ROM ⇒ `rvalid` with `err=1`, no slave selected, no side effect. No access may ever hang the CPU.
-- Slave selects are one-cycle pulses aligned with the request.
-- Window constants (`ROM_BASE`, `ROM_MASK`, …) as `localparam`s in one place.
-
-### B.3 Test vectors
-
-| # | Access | Expected |
-|---|---|---|
-| 1 | write `0xDEADBEEF` to `0x2000_0010`, read back | same value, `err=0` |
-| 2 | byte write `0xAA` to `0x2000_0011` (`be=4'b0010`) | only that byte changes |
-| 3 | read `0x1000_0000`, `0x1000_1000`, … `0x1000_5000` | the six ID values |
-| 4 | read `0x3000_0000` | `err=1`, no hang |
-| 5 | write to `0x0000_0010` (ROM) | `err=1` |
-| 6 | 3 back-to-back reads (RAM, TMR, PID) | each response matches its own address |
-| 7 | instr fetch `0x0000_0080` | ROM word, `err=0`; fetch `0x2000_0000` ⇒ `err=1` |
-
-Use a simple TB master that mimics Ibex timing, using dummy slave models (Vedam's memories + a stub register file returning the ID).
+Not yours any more. Ports, behaviour and test vectors are in Sheet 04 §E. You still depend on it: your Ibex harness (§C) runs through it and is its acceptance test, and you review it line by line (a bad address decode can hang the CPU).
 
 ---
 
@@ -129,7 +99,7 @@ Use a simple TB master that mimics Ibex timing, using dummy slave models (Vedam'
 This is your half of the CPU workload.
 
 1. **Week 1:** get the stock Ibex "Simple System" (`vendor/ibex/examples/simple_system`) building and running "hello world" (Verilator, or the lab simulator). Get the RISC-V GCC toolchain first (lowRISC releases). Goal: you can compile a C file and see it execute.
-2. **Week 3–4:** replace Simple System's memory/bus with **our** `rom_dp`, `ram_sp`, `bus_interconnect` and stub banks. Instantiate Ibex through Conolas's `cpu_subsystem`.
+2. **Week 3–4:** replace Simple System's memory/bus with **our** `rom_dp`, `ram_sp` and `bus_interconnect` (Vedam's; first version due end of W2) plus stub banks. Instantiate Ibex through Conolas's `cpu_subsystem`.
 3. Test firmware (tiny C): read the six IDs and check them; write/read RAM; write a bank register and read it back; count to 100 and write a "PASS" value to a magic RAM address the TB watches.
 4. Hand the working harness to Conolas so he can run real firmware in it.
 
@@ -137,7 +107,7 @@ This is your half of the CPU workload.
 
 - Review every PR within 24 h with the checklist (contract §9): ports match, lint, `TB_PASS`, no latches, reset values, README.
 - Review, don't rewrite. Write comments; the owner fixes.
-- Safety block (`safety_fault_monitor`): review line by line, then Conolas reviews again.
+- Safety block (`safety_fault_monitor`) and `bus_interconnect` (both Vedam's): review line by line, then Conolas reviews again.
 - Merge to `main` only when the checklist is fully ticked. Keep `main` always lint-clean.
 - If someone is blocked for more than a day, help them, then tell Conolas.
 
@@ -147,11 +117,11 @@ This is your half of the CPU workload.
 |---|---|
 | W1 | I2C shell with frozen ports merged; `mpu6050_model.v`; Ibex Simple System runs hello-world |
 | W2 | byte engine + TB; read WHO_AM_I in sim |
-| W3 | sequencer + regs; full sim latency test; `bus_interconnect` RTL + TB |
-| W4 | pair test with Dipiksha (tick → pipeline); pair test with Vedam (bus ↔ memories) |
+| W3 | sequencer + regs; full sim latency test |
+| W4 | pair test with Dipiksha (tick → pipeline); `tb_cpu_bus` against Vedam's bus + memories |
 | W5–6 | real MPU-6050 on FPGA; help bring up Wing A |
 | W7–8 | `tb_cpu_bus` with real firmware; CPU on FPGA with Conolas |
 
 ## DOs / DON'Ts
-**DO** publish the sample only after STOP · test NACK, timeout and stuck-bus · keep pins open-drain · keep `rvalid` timing exact.
-**DON'T** drive SDA/SCL high · leave the MPU asleep · let any address hang the bus · edit others' code during review · add ports to your wrapper.
+**DO** publish the sample only after STOP · test NACK, timeout and stuck-bus · keep pins open-drain.
+**DON'T** drive SDA/SCL high · leave the MPU asleep · edit others' code during review · add ports to your wrapper.

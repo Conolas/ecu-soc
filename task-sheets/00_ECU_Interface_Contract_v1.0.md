@@ -24,7 +24,7 @@ Status: DRAFT until Conolas signs off Section 12 (assumptions). After sign-off i
 | 2 | `cpu_subsystem` | `ibex_top` + config + tie-offs | Conolas | Kaushal |
 | 3 | Firmware (C) | startup, linker script, drivers, control app | Conolas | Kaushal |
 | 4 | `hw_pid_accel` | hardware PID + its register bank | Conolas | Kaushal |
-| 5 | `bus_interconnect` | Ibex ports → address decode → slaves | Kaushal | Conolas |
+| 5 | `bus_interconnect` | Ibex ports → address decode → slaves | Vedam | **Kaushal AND Conolas** |
 | 6 | `i2c_sensor_subsystem` | I2C master + MPU-6050 sequencer + I2C regs | Kaushal | Conolas |
 | 7 | `timer_unit` | control-tick scheduler + timer regs | Dipiksha | Kaushal |
 | 8 | `sensor_pipeline` | capture, calibration, angle conversion, filter, error calc + SENS regs | Dipiksha | Kaushal |
@@ -35,6 +35,8 @@ Status: DRAFT until Conolas signs off Section 12 (assumptions). After sign-off i
 | 13 | `ecu_fpga_top` | board wrapper: pins, I/O buffers, clock, input sync | Jaydev | Kaushal |
 
 External hardware (not RTL): MPU-6050 IMU, 2× BTS7960 H-bridge modules, 2× DC motors, FPGA board.
+
+> **Ownership note (4 Oct 2026):** `bus_interconnect` (address decode, ROM/RAM/bank select lines, bus-error responses, window constants) belongs to **Vedam**, together with the memories behind it (`rom_dp`, `ram_sp`). Kaushal reviews it and his Ibex harness (`tb_cpu_bus`) is its acceptance test; Conolas reviews the CPU-facing handshake.
 
 ---
 
@@ -117,7 +119,7 @@ Conversion constants used by `sensor_pipeline` (multiplier-free):
 | Peripheral: SAFE | `0x1000_5000` | 4 KB | Vedam |
 | RAM | `0x2000_0000` | 4 KB (`…_0FFF`) | Vedam |
 
-Anything else is **unmapped**: reads/writes must return a bus error and cause no side effect (Kaushal).
+Anything else is **unmapped**: reads/writes must return a bus error and cause no side effect (Vedam).
 Ibex: `boot_addr_i = 0x0000_0000` ⇒ reset vector is `0x0000_0080`; vector table occupies `0x00–0x7F`.
 ROM/RAM sizes are `localparam`s in ONE place (`bus_interconnect`) plus the memory modules; they may shrink for the ASIC flow (Phase 8 decision).
 
@@ -248,7 +250,7 @@ Rhythm: Monday 15-min stand-up (call). Friday: everyone posts a 1-minute wavefor
 | Dipiksha + Conolas | `sensor_pipeline` → `hw_pid_accel`: `pwm_cmd` matches golden model |
 | Conolas + Jaydev | `hw_pid_accel` → `actuation_subsystem`: correct PWM duty and direction |
 | Vedam + everyone | `safety_fault_monitor` in the loop: inject each fault, `pwm_enable` drops |
-| Kaushal + Vedam | `bus_interconnect` ↔ ROM/RAM: read/write/byte-enable tests |
+| Vedam + Kaushal | `bus_interconnect` + ROM/RAM driven by Kaushal's Ibex harness (`tb_cpu_bus`): read/write/byte-enable tests, six IDs read by firmware |
 
 ---
 
@@ -292,4 +294,4 @@ Send: (1) module + commit hash, (2) what you expected, (3) what happened, (4) a 
 | A9 | FPGA board / voltage: 3.3 V I/O (board not yet fixed) | constraints, level shifting |
 
 ---
-*Change log:* v1.0 — initial contract.
+*Change log:* v1.0 — initial contract. v1.0 (3 Oct 2026, clarification) — `bus_interconnect` assigned to Kaushal. v1.0 (4 Oct 2026, ownership change) — `bus_interconnect` moved from Kaushal to Vedam. No port, address or format changes.

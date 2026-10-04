@@ -2,6 +2,8 @@
 
 Companion to `00_ECU_Interface_Contract_v1.0.md` and the five member sheets. All dates below are **internal targets**. Weeks run Monday → Sunday. The check for each week happens on the **Sunday**: your PR merged, your `TB_PASS` log posted, and your status message sent to Conolas.
 
+Ownership reminder: `bus_interconnect` is Vedam's (first RTL in W2, all 7 test vectors in W3). Kaushal reviews it and his `tb_cpu_bus` harness is its acceptance test in W4.
+
 Assumption: about 10–12 focused hours per person per week. If that is unrealistic for you, say so in Week 1, not in Week 4.
 
 ---
@@ -81,21 +83,21 @@ Conolas is remote until about the end of October (adjust once his return date is
 
 ---
 
-## 5. Kaushal — `i2c_sensor_subsystem`, `bus_interconnect`, Ibex harness, deputy lead
+## 5. Kaushal — `i2c_sensor_subsystem`, Ibex harness, deputy lead
 
 | Week | Blocks / sub-blocks | Done when (Sunday) |
 |---|---|---|
-| **W1** | I2C and bus shells with frozen ports merged; `tb/mpu6050_model.v` started; Ibex Simple System hello-world running; **start reviewing PRs** | shells merged; hello-world visible in simulation |
+| **W1** | I2C shell with frozen ports merged; `tb/mpu6050_model.v` started; Ibex Simple System hello-world running; **start reviewing PRs** | shells merged; hello-world visible in simulation |
 | **W2** | `i2c_master` byte engine: START, STOP, write byte, read byte, ACK/NACK, repeated START, clock stretching, 2-FF synchronisers; TB | WHO_AM_I read returns `0x68` on the model |
-| **W3** | `mpu6050_ctrl`: init sequence, 14-byte burst read, decode, error/timeout handling; `i2c_regs`; `bus_interconnect` RTL with all 7 test vectors | `control_tick`→`imu_valid` latency 380–440 µs; bus vectors 1–7 pass (**G1**) |
-| **W4** | Pair tests: with Dipiksha (tick → I2C model → pipeline) and with Vedam (bus ↔ ROM/RAM). `tb_cpu_bus` with our ROM/RAM/bus and Conolas's test firmware | both pair tests pass (**G2**); firmware reads six IDs through the real bus |
+| **W3** | `mpu6050_ctrl`: init sequence, 14-byte burst read, decode, error/timeout handling; `i2c_regs` | `control_tick`→`imu_valid` latency 380–440 µs (**G1**) |
+| **W4** | Pair test with Dipiksha (tick → I2C model → pipeline). `tb_cpu_bus` with Vedam's ROM/RAM/bus and Conolas's test firmware | pair test passes (**G2**); firmware reads six IDs through Vedam's bus |
 | **W5** | Final lint pass on every merged block; RTL-freeze checklist for all 13 modules; error-injection tests (NACK, stuck SDA) | all PRs merged; freeze checklist signed (**G3**) |
 | **W6** | Real MPU-6050 on FPGA: ACK on every byte, SCL ≈ 390 kHz, raw values change when tilted; logic-analyser captures | verified with screenshots |
 | **W7** | Wing A support; I2C robustness (unplug/replug the IMU, watch error counters and recovery); help Dipiksha bench-check signs | sensor unplug recovered cleanly (**G4**) |
 | **W8** | CPU bring-up with Conolas: ILA on the bus, address decode checks on hardware | six IDs read by firmware on the board (**G5**) |
 | **W9** | Long-run I2C soak test (≥ 30 min, zero unexplained errors); demo support | soak log in the repo (**G6**) |
 | **Dec** | Exams. Optional: Genus reading, gate-level simulation setup notes | — |
-| **Jan–Feb** | Genus synthesis of I2C and bus; gate-level simulation harness (Section 8) | — |
+| **Jan–Feb** | Genus synthesis of I2C; gate-level simulation harness (Section 8) | — |
 
 ---
 
@@ -117,21 +119,21 @@ Conolas is remote until about the end of October (adjust once his return date is
 
 ---
 
-## 7. Vedam — `rom_dp`, `ram_sp`, `clk_rst_gen`, `safety_fault_monitor`
+## 7. Vedam — `rom_dp`, `ram_sp`, `clk_rst_gen`, `safety_fault_monitor`, `bus_interconnect`
 
 | Week | Blocks / sub-blocks | Done when (Sunday) |
 |---|---|---|
-| **W1** | Shells for all four modules with frozen ports merged; **`clk_rst_gen` complete** with TB (bounce test, PLL-lock hold) | `clk_rst_gen` PR merged |
-| **W2** | `rom_dp` (two read ports, `$readmemh` init) and `ram_sp` (byte enables) with TB vectors 1–7; `sw/bin2hex.py` + Makefile rule | memory PRs open, vectors pass; `nop` word matches `objdump` |
-| **W3** | `safety_fault_monitor`: FSM (`DISARMED → ARMED → FAULT`), ESTOP synchroniser, TILT/SENSOR_TIMEOUT/I2C_ERR/PID_SAT/WATCHDOG detection, SAFE regs, `DBG_OUT` | scenarios 1–8 pass (**G1** for memories + reset; safety RTL first version) |
-| **W4** | Safety scenarios 9–14; review by Kaushal, then Conolas; pair test with everyone (inject each fault in the loop) | all 14 scenarios pass; both reviews done (**G2**) |
+| **W1** | Shells for all five modules with frozen ports merged; **`clk_rst_gen` complete** with TB (bounce test, PLL-lock hold) | `clk_rst_gen` PR merged |
+| **W2** | `rom_dp` (two read ports, `$readmemh` init) and `ram_sp` (byte enables) with TB vectors 1–7; `bus_interconnect` first RTL version (decoder, handshake, error responder) | memory PRs open, vectors pass; bus RTL pushed so Kaushal's harness can start |
+| **W3** | `bus_interconnect` all 7 test vectors; `sw/bin2hex.py` + Makefile rule (`nop` word matches `objdump`); `safety_fault_monitor`: FSM (`DISARMED → ARMED → FAULT`), ESTOP synchroniser, TILT/SENSOR_TIMEOUT/I2C_ERR/PID_SAT/WATCHDOG detection, SAFE regs, `DBG_OUT` | bus vectors 1–7 pass (**G1** for memories, reset, bus); safety scenarios 1–8 pass (safety RTL first version) |
+| **W4** | Safety scenarios 9–14; review by Kaushal, then Conolas; pair test of the bus with Kaushal's `tb_cpu_bus` harness; pair test with everyone (inject each fault in the loop) | all 14 scenarios pass; firmware reads six IDs through your bus; both reviews done (**G2**) |
 | **W5** | Fix review comments; final TB pass; lint; README; short note on ASIC memory options (flop-based vs macro, sizes) | freeze (**G3**) |
 | **W6** | FPGA: firmware `.hex` loads into ROM; arm switch, E-stop, LED fault flags on the real board; power-cycle leaves motors disabled | photos/video of each check |
 | **W7** | Wing A safety validation: tilt cutoff by hand, unplug the IMU (SENSOR_TIMEOUT), E-stop in the loop, fault re-arm sequence | every test logged as pass/fail (**G4**) |
 | **W8** | Watchdog with real firmware (`WD_EN`, `WD_KICK`); boot from ROM on the board; verify the watchdog trips when the CPU is halted | watchdog test logged (**G5**) |
 | **W9** | Safety report: table of every scenario, result on hardware, evidence link | report merged (**G6**) |
 | **Dec** | Exams. Optional: read about SRAM macros and memory compilers | — |
-| **Jan–Feb** | ASIC memory strategy with Conolas; synthesis of memories, safety monitor, clock/reset (Section 8) | — |
+| **Jan–Feb** | ASIC memory strategy with Conolas; synthesis of memories, bus, safety monitor, clock/reset (Section 8) | — |
 
 ---
 
@@ -175,7 +177,7 @@ Details will be refined at the start of January once we know the exact PDK and t
 | Person | Must be done by 31 Oct | Must be done by 29 Nov |
 |---|---|---|
 | **Conolas** | `hw_pid_accel`, `cpu_subsystem`, firmware in sim, `ecu_soc_top`, freeze | tuned loop, CPU on FPGA, `v1.0-fpga` |
-| **Kaushal** | I2C subsystem, `bus_interconnect`, Ibex harness, all reviews | real IMU verified, CPU on bus, soak test |
+| **Kaushal** | I2C subsystem, Ibex harness, all reviews | real IMU verified, CPU on bus, soak test |
 | **Dipiksha** | timer, full sensor pipeline (+ complementary filter) | angle/rate verified on hardware, filter settings chosen |
-| **Vedam** | ROM/RAM, reset, safety monitor (all 14 scenarios) | safety validated on hardware, watchdog with firmware |
+| **Vedam** | ROM/RAM, reset, `bus_interconnect`, safety monitor (all 14 scenarios) | safety validated on hardware, watchdog with firmware |
 | **Jaydev** | PWM/actuation (13 vectors), FPGA top, bitstream | motors bench-verified, closed loop on stand |

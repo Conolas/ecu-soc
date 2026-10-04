@@ -1,8 +1,10 @@
-# Sheet 04 — Vedam: `rom_dp`, `ram_sp`, `clk_rst_gen`, `safety_fault_monitor`, firmware-to-ROM flow
+# Sheet 04 — Vedam: `rom_dp`, `ram_sp`, `clk_rst_gen`, `safety_fault_monitor`, `bus_interconnect`, firmware-to-ROM flow
 
 Read `00_ECU_Interface_Contract_v1.0.md` first.
 
-**Role:** you own the memory the CPU runs from, the reset that starts everything cleanly, and the **safety block that decides whether the motors are allowed to move**. The safety block is the most important thing on the robot: a bug there can damage hardware or hurt someone. It gets the most careful testing and is reviewed by both Kaushal and Conolas.
+**Role:** you own the memory the CPU runs from, the bus that connects the CPU to everything, the reset that starts everything cleanly, and the **safety block that decides whether the motors are allowed to move**. The safety block is the most important thing on the robot: a bug there can damage hardware or hurt someone. It gets the most careful testing and is reviewed by both Kaushal and Conolas.
+
+**Added (4 Oct 2026):** `bus_interconnect` (address decode, selects, error responses) is now yours too — §E below. Kaushal reviews it, and his Ibex harness (`tb_cpu_bus`) is its acceptance test: if firmware can read all six IDs through your bus, it passes.
 
 | # | Deliverable | Done when |
 |---|---|---|
@@ -10,8 +12,9 @@ Read `00_ECU_Interface_Contract_v1.0.md` first.
 | B | `clk_rst_gen` | clean reset assert/release, verified in sim |
 | C | `safety_fault_monitor` (+ SAFE regs, `DBG_OUT`) | every fault scenario verified; motors off ≤ 2 clk after a fault |
 | D | `sw/bin2hex.py` + Makefile rule | firmware `.bin` → ROM init file automatically |
+| E | `bus_interconnect` | all 7 bus vectors pass; Kaushal's harness reads the six IDs through it |
 
-Suggested order: B (easy, everyone needs it) → A → D → C (spend most of your time here).
+Suggested order: B (easy, everyone needs it) → A → E (Kaushal's harness waits for it) → D → C (spend most of your time here; start its shell in W1).
 
 ---
 
@@ -164,17 +167,62 @@ Arm with the switch; tilt the board past the limit by hand: LED shows fault, out
 
 `sw/bin2hex.py <in.bin> <out.hex>`: read the binary, pad to a multiple of 4 bytes, write one 8-hex-digit word per line, **little-endian** (byte 0 is the least significant byte), no `@` address lines. `sw/Makefile` target `rom` builds the firmware and produces `firmware.hex` for `$readmemh`. Test with a 3-instruction binary and compare against the `objdump` disassembly (word `0x00000013` = `nop`). Note: `objcopy -O verilog` addresses can be confusing; this script avoids the problem.
 
+## E. `bus_interconnect`
+
+### E.1 Ports (frozen)
+
+| Group | Ports |
+|---|---|
+| Common | `clk`, `rst_n` |
+| Ibex instr (from CPU) | `instr_req_i`, `instr_addr_i[31:0]` → `instr_gnt_o`, `instr_rvalid_o`, `instr_rdata_o[31:0]`, `instr_err_o` |
+| Ibex data (from CPU) | `data_req_i`, `data_we_i`, `data_be_i[3:0]`, `data_addr_i[31:0]`, `data_wdata_i[31:0]` → `data_gnt_o`, `data_rvalid_o`, `data_rdata_o[31:0]`, `data_err_o` |
+| ROM instr port | `rom_ia_req_o`, `rom_ia_addr_o[12:0]`, `rom_ia_rdata_i[31:0]` |
+| ROM data-read | `rom_sel_o`, `rom_addr_o[12:0]`, `rom_rdata_i[31:0]` |
+| RAM | `ram_sel_o`, `ram_we_o`, `ram_be_o[3:0]`, `ram_addr_o[11:0]`, `ram_wdata_o[31:0]`, `ram_rdata_i[31:0]` |
+| Each bank `tmr`, `i2c`, `sens`, `pid`, `pwm`, `saf` | `<b>_sel_o`, `<b>_we_o`, `<b>_be_o[3:0]`, `<b>_addr_o[11:0]`, `<b>_wdata_o[31:0]`, `<b>_rdata_i[31:0]` |
+
+### E.2 Behaviour
+- **Instruction side:** only ROM is fetchable. `instr_gnt_o = instr_req_i` (same cycle); `instr_rvalid_o` next cycle with `rom_ia_rdata_i`. Any address outside ROM ⇒ `instr_rvalid_o` with `instr_err_o=1`.
+- **Data side:** decode `data_addr_i` per the memory map (contract §4). `data_gnt_o = data_req_i` (same cycle). One cycle later: `data_rvalid_o=1` and `data_rdata_o` = the **registered** selected slave read data. Register the select (`sel_q`) so back-to-back accesses return the right data.
+- **Writes also get `rvalid`.** Ibex waits for it.
+- **Errors:** unmapped address, or write to ROM ⇒ `rvalid` with `err=1`, no slave selected, no side effect. No access may ever hang the CPU.
+- Slave selects are one-cycle pulses aligned with the request.
+- Window constants (`ROM_BASE`, `ROM_MASK`, …) as `localparam`s in one place.
+
+### E.3 Test vectors
+
+| # | Access | Expected |
+|---|---|---|
+| 1 | write `0xDEADBEEF` to `0x2000_0010`, read back | same value, `err=0` |
+| 2 | byte write `0xAA` to `0x2000_0011` (`be=4'b0010`) | only that byte changes |
+| 3 | read `0x1000_0000`, `0x1000_1000`, … `0x1000_5000` | the six ID values |
+| 4 | read `0x3000_0000` | `err=1`, no hang |
+| 5 | write to `0x0000_0010` (ROM) | `err=1` |
+| 6 | 3 back-to-back reads (RAM, TMR, PID) | each response matches its own address |
+| 7 | instr fetch `0x0000_0080` | ROM word, `err=0`; fetch `0x2000_0000` ⇒ `err=1` |
+
+Use a simple TB master that mimics Ibex timing, using your own `rom_dp`/`ram_sp` and a stub register file that returns the bank ID. Acceptance: Kaushal's `tb_cpu_bus` firmware reads all six IDs through this bus.
+
+### E.4 How to build it (suggested order)
+1. Write the address decode as one `localparam` table (`ROM_BASE`, `RAM_BASE`, `BANK_BASE`, window masks) and one `case`/compare that produces a one-hot select.
+2. Add the handshake: `gnt = req`, then a register `rvalid_q <= req` (reads and writes).
+3. Register the select (`sel_q`) and the error flag; mux the read data with `sel_q`, not with the live address.
+4. Add the error responder last (unmapped address, write to ROM, fetch outside ROM) and test it first with vector 4.
+Ask Kaushal for the `tb_cpu_bus` skeleton early; it is easier to debug with a CPU-like master than with hand-written stimulus.
+
+---
+
 ## Your timeline
 
 | Week | You |
 |---|---|
-| W1 | shells with frozen ports merged for `rom_dp`, `ram_sp`, `clk_rst_gen`, `safety_fault_monitor`; `clk_rst_gen` finished |
-| W2 | `rom_dp`, `ram_sp` + TB; `bin2hex.py` |
-| W3 | `safety_fault_monitor` RTL + regs |
-| W4 | all 14 scenarios in a self-checking TB; pair test: safety in the loop with everyone |
+| W1 | shells with frozen ports merged for `rom_dp`, `ram_sp`, `clk_rst_gen`, `safety_fault_monitor`, `bus_interconnect`; `clk_rst_gen` finished |
+| W2 | `rom_dp`, `ram_sp` + TB; `bus_interconnect` RTL first version (decoder, handshake, error responder) |
+| W3 | `bus_interconnect` all 7 vectors; `safety_fault_monitor` RTL + regs; `bin2hex.py` |
+| W4 | all 14 safety scenarios in a self-checking TB; pair tests: bus with Kaushal's `tb_cpu_bus` harness, safety in the loop with everyone |
 | W5–6 | FPGA: arm switch, E-stop, LED flags on the real board |
 | W7–8 | watchdog with real firmware (`WD_EN`, `WD_KICK`); help debug boot issues |
 
 ## DOs / DON'Ts
-**DO** default every safety output to "motors off" · latch faults · test every fault, including two at once · debounce sensor glitches but never debounce E-stop · keep the safety FSM small enough to read in one sitting · ask Kaushal and Conolas to review before you consider it done.
+**DO** default every safety output to "motors off" · keep `rvalid` timing exact and never let any address hang the CPU · latch faults · test every fault, including two at once · debounce sensor glitches but never debounce E-stop · keep the safety FSM small enough to read in one sitting · ask Kaushal and Conolas to review before you consider it done.
 **DON'T** let software be required to *disable* motors · let a fault clear itself · use `initial` for logic · add extra ports · enable the watchdog by default (Phase 1 has no CPU).
