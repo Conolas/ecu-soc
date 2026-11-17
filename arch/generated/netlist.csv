@@ -1,0 +1,113 @@
+net,width,kind,format,driver,loads,class,note
+clk,1,clock,clock,clk_rst_gen.clk,timer_unit.clk i2c_sensor_subsystem.clk sensor_pipeline.clk hw_pid_accel.clk actuation_subsystem.clk safety_fault_monitor.clk rom_dp.clk ram_sp.clk bus_interconnect.clk cpu_subsystem.clk,core,"one 50 MHz clock for everything, including Ibex"
+rst_n,1,level,level,clk_rst_gen.rst_n,timer_unit.rst_n i2c_sensor_subsystem.rst_n sensor_pipeline.rst_n hw_pid_accel.rst_n actuation_subsystem.rst_n safety_fault_monitor.rst_n bus_interconnect.rst_n cpu_subsystem.rst_n,core,"async assert, sync release"
+clk_in,1,clock,clock,TOP.clk_in,clk_rst_gen.clk_in,core,board clock
+rst_n_in,1,level,level,TOP.rst_n_in,clk_rst_gen.rst_n_in,core,external reset
+pll_locked_i,1,level,level,TOP.pll_locked_i,clk_rst_gen.pll_locked_i,fpga,FPGA clock generator lock
+control_tick,1,pulse,pulse,timer_unit.control_tick_o,i2c_sensor_subsystem.control_tick_i sensor_pipeline.control_tick_i safety_fault_monitor.control_tick_i,core,about 512 Hz sample trigger; sensor_pipeline input added by ACR-2
+imu_valid,1,pulse,pulse,i2c_sensor_subsystem.imu_valid_o,sensor_pipeline.imu_valid_i safety_fault_monitor.imu_valid_i,core,a full 14-byte sample was read
+imu_ax,16,data,int16,i2c_sensor_subsystem.imu_ax_o,sensor_pipeline.imu_ax_i,core,raw IMU value
+imu_ay,16,data,int16,i2c_sensor_subsystem.imu_ay_o,sensor_pipeline.imu_ay_i,core,raw IMU value
+imu_az,16,data,int16,i2c_sensor_subsystem.imu_az_o,sensor_pipeline.imu_az_i,core,raw IMU value
+imu_gx,16,data,int16,i2c_sensor_subsystem.imu_gx_o,sensor_pipeline.imu_gx_i,core,raw IMU value
+imu_gy,16,data,int16,i2c_sensor_subsystem.imu_gy_o,sensor_pipeline.imu_gy_i,core,raw IMU value
+imu_gz,16,data,int16,i2c_sensor_subsystem.imu_gz_o,sensor_pipeline.imu_gz_i,core,raw IMU value
+imu_busy,1,level,level,i2c_sensor_subsystem.imu_busy_o,timer_unit.sched_busy_i,core,overrun detection
+imu_err,1,pulse,pulse,i2c_sensor_subsystem.imu_err_o,safety_fault_monitor.imu_err_i,core,failed transaction
+imu_init_done,1,level,level,i2c_sensor_subsystem.imu_init_done_o,sensor_pipeline.imu_init_done_i safety_fault_monitor.imu_init_done_i,core,MPU-6050 configured
+setpoint,32,data,Q16.16 rad,hw_pid_accel.setpoint_o,sensor_pipeline.setpoint_i,core,from the PID SETPOINT register
+pipe_valid,1,pulse,pulse,sensor_pipeline.pipe_valid_o,hw_pid_accel.err_valid_i safety_fault_monitor.pipe_valid_i,core,"angle, err, rate valid together"
+angle,32,data,Q16.16 rad,sensor_pipeline.angle_o,safety_fault_monitor.angle_i,core,"filtered, trimmed"
+err,32,data,Q16.16,sensor_pipeline.err_o,hw_pid_accel.err_i,core,setpoint - angle
+rate,32,data,Q16.16 rad/s,sensor_pipeline.rate_o,hw_pid_accel.rate_i,core,"filtered, bias-corrected"
+calib_done,1,level,level,sensor_pipeline.calib_done_o,safety_fault_monitor.calib_done_i,core,arming precondition
+pwm_cmd_valid,1,pulse,pulse,hw_pid_accel.pwm_cmd_valid_o,actuation_subsystem.cmd_valid_i,core,new motor command
+pwm_cmd,32,data,"Q16.16 [-1,+1]",hw_pid_accel.pwm_cmd_o,actuation_subsystem.cmd_i,core,balance command
+pid_sat,1,level,level,hw_pid_accel.pid_sat_o,safety_fault_monitor.pid_sat_i,core,saturation monitor
+pwm_enable,1,level,level,safety_fault_monitor.pwm_enable_o,hw_pid_accel.run_i actuation_subsystem.pwm_enable_i,core,motors allowed (the only authority over the motors)
+irq_timer,1,level,level,timer_unit.irq_timer_o,cpu_subsystem.irq_timer_i,core,"housekeeping interrupt, W1C in TMR"
+irq_fault,1,level,level,safety_fault_monitor.irq_fault_o,cpu_subsystem.irq_fault_i,core,"fault interrupt, cleared through SAFE regs"
+estop_n_i,1,level,level,TOP.estop_n_i,safety_fault_monitor.estop_n_i,core,raw pin; synchronised inside safety (ACR-1)
+arm_sw_i,1,level,level,TOP.arm_sw_i,safety_fault_monitor.arm_sw_i,bringup,raw pin; synchronised inside safety (ACR-1)
+bench_en_i,1,level,level,TOP.bench_en_i,actuation_subsystem.bench_en_i,bringup,raw pin; synchronised inside actuation (ACR-1)
+bench_sel_i,2,data,code,TOP.bench_sel_i,actuation_subsystem.bench_sel_i,bringup,raw pins; synchronised inside actuation (ACR-1)
+scl_i,1,level,level,TOP.scl_i,i2c_sensor_subsystem.scl_i,core,raw; 2-FF inside i2c
+sda_i,1,level,level,TOP.sda_i,i2c_sensor_subsystem.sda_i,core,raw; 2-FF inside i2c
+scl_drive_low_o,1,level,level,i2c_sensor_subsystem.scl_drive_low_o,TOP.scl_drive_low_o,core,open-drain drive
+sda_drive_low_o,1,level,level,i2c_sensor_subsystem.sda_drive_low_o,TOP.sda_drive_low_o,core,open-drain drive
+l_rpwm_o,1,level,level,actuation_subsystem.l_rpwm_o,TOP.l_rpwm_o,core,motor driver pin
+l_lpwm_o,1,level,level,actuation_subsystem.l_lpwm_o,TOP.l_lpwm_o,core,motor driver pin
+l_r_en_o,1,level,level,actuation_subsystem.l_r_en_o,TOP.l_r_en_o,core,motor driver pin
+l_l_en_o,1,level,level,actuation_subsystem.l_l_en_o,TOP.l_l_en_o,core,motor driver pin
+r_rpwm_o,1,level,level,actuation_subsystem.r_rpwm_o,TOP.r_rpwm_o,core,motor driver pin
+r_lpwm_o,1,level,level,actuation_subsystem.r_lpwm_o,TOP.r_lpwm_o,core,motor driver pin
+r_r_en_o,1,level,level,actuation_subsystem.r_r_en_o,TOP.r_r_en_o,core,motor driver pin
+r_l_en_o,1,level,level,actuation_subsystem.r_l_en_o,TOP.r_l_en_o,core,motor driver pin
+dbg_o,8,data,LED bits,safety_fault_monitor.dbg_o,TOP.dbg_o,dbg,LEDs / debug pins
+duty_l,16,data,counts,actuation_subsystem.duty_l_o,,dbg,debug tap: ILA probe
+duty_r,16,data,counts,actuation_subsystem.duty_r_o,,dbg,debug tap: ILA probe
+cpu_core_sleep,1,level,level,cpu_subsystem.core_sleep_o,,dbg,debug tap: ILA probe
+cpu_double_fault,1,level,level,cpu_subsystem.double_fault_seen_o,,dbg,debug tap: ILA probe
+instr_req,1,bus,level,cpu_subsystem.instr_req_o,bus_interconnect.instr_req_i,core,Ibex instruction port
+instr_addr,32,bus,byte addr,cpu_subsystem.instr_addr_o,bus_interconnect.instr_addr_i,core,Ibex instruction port
+instr_gnt,1,bus,level,bus_interconnect.instr_gnt_o,cpu_subsystem.instr_gnt_i,core,"grant = request, same cycle"
+instr_rvalid,1,bus,pulse,bus_interconnect.instr_rvalid_o,cpu_subsystem.instr_rvalid_i,core,"response, next cycle"
+instr_rdata,32,bus,word,bus_interconnect.instr_rdata_o,cpu_subsystem.instr_rdata_i,core,instruction word
+instr_err,1,bus,level,bus_interconnect.instr_err_o,cpu_subsystem.instr_err_i,core,fetch error
+data_req,1,bus,level,cpu_subsystem.data_req_o,bus_interconnect.data_req_i,core,Ibex data port
+data_we,1,bus,level,cpu_subsystem.data_we_o,bus_interconnect.data_we_i,core,store
+data_be,4,bus,mask,cpu_subsystem.data_be_o,bus_interconnect.data_be_i,core,byte enables
+data_addr,32,bus,byte addr,cpu_subsystem.data_addr_o,bus_interconnect.data_addr_i,core,address
+data_wdata,32,bus,word,cpu_subsystem.data_wdata_o,bus_interconnect.data_wdata_i,core,write data
+data_gnt,1,bus,level,bus_interconnect.data_gnt_o,cpu_subsystem.data_gnt_i,core,grant
+data_rvalid,1,bus,pulse,bus_interconnect.data_rvalid_o,cpu_subsystem.data_rvalid_i,core,response
+data_rdata,32,bus,word,bus_interconnect.data_rdata_o,cpu_subsystem.data_rdata_i,core,read data
+data_err,1,bus,level,bus_interconnect.data_err_o,cpu_subsystem.data_err_i,core,bus error
+rom_ia_req,1,bus,pulse,bus_interconnect.rom_ia_req_o,rom_dp.ia_req_i,core,
+rom_ia_addr,13,bus,byte addr,bus_interconnect.rom_ia_addr_o,rom_dp.ia_addr_i,core,
+rom_ia_rdata,32,bus,word,rom_dp.ia_rdata_o,bus_interconnect.rom_ia_rdata_i,core,
+rom_sel,1,bus,pulse,bus_interconnect.rom_sel_o,rom_dp.s_sel_i,core,
+rom_addr,13,bus,byte addr,bus_interconnect.rom_addr_o,rom_dp.s_addr_i,core,
+rom_rdata,32,bus,word,rom_dp.s_rdata_o,bus_interconnect.rom_rdata_i,core,
+ram_sel,1,bus,pulse,bus_interconnect.ram_sel_o,ram_sp.s_sel_i,core,
+ram_we,1,bus,level,bus_interconnect.ram_we_o,ram_sp.s_we_i,core,
+ram_be,4,bus,mask,bus_interconnect.ram_be_o,ram_sp.s_be_i,core,
+ram_addr,12,bus,byte offset,bus_interconnect.ram_addr_o,ram_sp.s_addr_i,core,
+ram_wdata,32,bus,word,bus_interconnect.ram_wdata_o,ram_sp.s_wdata_i,core,
+ram_rdata,32,bus,word,ram_sp.s_rdata_o,bus_interconnect.ram_rdata_i,core,
+tmr_sel,1,bus,pulse,bus_interconnect.tmr_sel_o,timer_unit.s_sel_i,core,TMR bank slave bus
+tmr_we,1,bus,level,bus_interconnect.tmr_we_o,timer_unit.s_we_i,core,TMR bank slave bus
+tmr_be,4,bus,mask,bus_interconnect.tmr_be_o,timer_unit.s_be_i,core,TMR bank slave bus
+tmr_addr,12,bus,byte offset,bus_interconnect.tmr_addr_o,timer_unit.s_addr_i,core,TMR bank slave bus
+tmr_wdata,32,bus,word,bus_interconnect.tmr_wdata_o,timer_unit.s_wdata_i,core,TMR bank slave bus
+tmr_rdata,32,bus,word,timer_unit.s_rdata_o,bus_interconnect.tmr_rdata_i,core,TMR bank read data
+i2c_sel,1,bus,pulse,bus_interconnect.i2c_sel_o,i2c_sensor_subsystem.s_sel_i,core,I2C bank slave bus
+i2c_we,1,bus,level,bus_interconnect.i2c_we_o,i2c_sensor_subsystem.s_we_i,core,I2C bank slave bus
+i2c_be,4,bus,mask,bus_interconnect.i2c_be_o,i2c_sensor_subsystem.s_be_i,core,I2C bank slave bus
+i2c_addr,12,bus,byte offset,bus_interconnect.i2c_addr_o,i2c_sensor_subsystem.s_addr_i,core,I2C bank slave bus
+i2c_wdata,32,bus,word,bus_interconnect.i2c_wdata_o,i2c_sensor_subsystem.s_wdata_i,core,I2C bank slave bus
+i2c_rdata,32,bus,word,i2c_sensor_subsystem.s_rdata_o,bus_interconnect.i2c_rdata_i,core,I2C bank read data
+sens_sel,1,bus,pulse,bus_interconnect.sens_sel_o,sensor_pipeline.s_sel_i,core,SENS bank slave bus
+sens_we,1,bus,level,bus_interconnect.sens_we_o,sensor_pipeline.s_we_i,core,SENS bank slave bus
+sens_be,4,bus,mask,bus_interconnect.sens_be_o,sensor_pipeline.s_be_i,core,SENS bank slave bus
+sens_addr,12,bus,byte offset,bus_interconnect.sens_addr_o,sensor_pipeline.s_addr_i,core,SENS bank slave bus
+sens_wdata,32,bus,word,bus_interconnect.sens_wdata_o,sensor_pipeline.s_wdata_i,core,SENS bank slave bus
+sens_rdata,32,bus,word,sensor_pipeline.s_rdata_o,bus_interconnect.sens_rdata_i,core,SENS bank read data
+pid_sel,1,bus,pulse,bus_interconnect.pid_sel_o,hw_pid_accel.s_sel_i,core,PID bank slave bus
+pid_we,1,bus,level,bus_interconnect.pid_we_o,hw_pid_accel.s_we_i,core,PID bank slave bus
+pid_be,4,bus,mask,bus_interconnect.pid_be_o,hw_pid_accel.s_be_i,core,PID bank slave bus
+pid_addr,12,bus,byte offset,bus_interconnect.pid_addr_o,hw_pid_accel.s_addr_i,core,PID bank slave bus
+pid_wdata,32,bus,word,bus_interconnect.pid_wdata_o,hw_pid_accel.s_wdata_i,core,PID bank slave bus
+pid_rdata,32,bus,word,hw_pid_accel.s_rdata_o,bus_interconnect.pid_rdata_i,core,PID bank read data
+pwm_sel,1,bus,pulse,bus_interconnect.pwm_sel_o,actuation_subsystem.s_sel_i,core,PWM bank slave bus
+pwm_we,1,bus,level,bus_interconnect.pwm_we_o,actuation_subsystem.s_we_i,core,PWM bank slave bus
+pwm_be,4,bus,mask,bus_interconnect.pwm_be_o,actuation_subsystem.s_be_i,core,PWM bank slave bus
+pwm_addr,12,bus,byte offset,bus_interconnect.pwm_addr_o,actuation_subsystem.s_addr_i,core,PWM bank slave bus
+pwm_wdata,32,bus,word,bus_interconnect.pwm_wdata_o,actuation_subsystem.s_wdata_i,core,PWM bank slave bus
+pwm_rdata,32,bus,word,actuation_subsystem.s_rdata_o,bus_interconnect.pwm_rdata_i,core,PWM bank read data
+saf_sel,1,bus,pulse,bus_interconnect.saf_sel_o,safety_fault_monitor.s_sel_i,core,SAF bank slave bus
+saf_we,1,bus,level,bus_interconnect.saf_we_o,safety_fault_monitor.s_we_i,core,SAF bank slave bus
+saf_be,4,bus,mask,bus_interconnect.saf_be_o,safety_fault_monitor.s_be_i,core,SAF bank slave bus
+saf_addr,12,bus,byte offset,bus_interconnect.saf_addr_o,safety_fault_monitor.s_addr_i,core,SAF bank slave bus
+saf_wdata,32,bus,word,bus_interconnect.saf_wdata_o,safety_fault_monitor.s_wdata_i,core,SAF bank slave bus
+saf_rdata,32,bus,word,safety_fault_monitor.s_rdata_o,bus_interconnect.saf_rdata_i,core,SAF bank read data

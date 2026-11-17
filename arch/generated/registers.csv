@@ -1,0 +1,70 @@
+bank,block,address,offset,name,access,reset,description
+TMR,timer_unit,0x10000000,0x00,ID,RO,0x54494D01,"""TIM"" + version 01"
+TMR,timer_unit,0x10000004,0x04,CTRL,RW,b0=DEF_EN,b0 EN (ticks run); b1 IRQ_EN; b2 CNT_CLR (SC) restart counters
+TMR,timer_unit,0x10000008,0x08,TICK_PERIOD,RW,97656,clk cycles per tick (min 1000); new value applies at next reload
+TMR,timer_unit,0x1000000C,0x0C,IRQ_DIV,RW,51,ticks per timer interrupt (about 10 Hz)
+TMR,timer_unit,0x10000010,0x10,STATUS,RO/W1C,0,b0 IRQ_PENDING (W1C); b1 OVERRUN (W1C)
+TMR,timer_unit,0x10000014,0x14,TICK_COUNT,RO,0,ticks since enable
+TMR,timer_unit,0x10000018,0x18,FREE_CNT,RO,0,free-running clk counter (timestamp)
+I2C,i2c_sensor_subsystem,0x10001000,0x00,ID,RO,0x49324301,"""I2C"" + version 01"
+I2C,i2c_sensor_subsystem,0x10001004,0x04,CTRL,RW,b0=DEF_EN,b0 EN; b1 REINIT (SC); b2 SOFT_TRIG (SC)
+I2C,i2c_sensor_subsystem,0x10001008,0x08,CLK_DIV,RW,31,f_scl = f_clk / (4*(CLK_DIV+1)) = 390.6 kHz
+I2C,i2c_sensor_subsystem,0x1000100C,0x0C,STATUS,RO/W1C,0,b0 INIT_DONE; b1 BUSY; b2 ERR_STICKY (W1C); b3 TIMEOUT_STICKY (W1C)
+I2C,i2c_sensor_subsystem,0x10001010,0x10,ERR_COUNT,RO,0,saturating count of failed transactions
+I2C,i2c_sensor_subsystem,0x10001014,0x14,SAMPLE_COUNT,RO,0,good samples since reset
+I2C,i2c_sensor_subsystem,0x10001018,0x18,DEV_ADDR,RW,0x68,7-bit device address
+I2C,i2c_sensor_subsystem,0x10001020,0x20,AX,RO,0,"raw, sign-extended"
+I2C,i2c_sensor_subsystem,0x10001024,0x24,AY,RO,0,raw
+I2C,i2c_sensor_subsystem,0x10001028,0x28,AZ,RO,0,raw
+I2C,i2c_sensor_subsystem,0x1000102C,0x2C,GX,RO,0,raw
+I2C,i2c_sensor_subsystem,0x10001030,0x30,GY,RO,0,raw
+I2C,i2c_sensor_subsystem,0x10001034,0x34,GZ,RO,0,raw
+SENS,sensor_pipeline,0x10002000,0x00,ID,RO,0x53454E01,"""SEN"" + version 01"
+SENS,sensor_pipeline,0x10002004,0x04,CTRL,RW,0,b0 CAL_START (SC); b1 AXIS_SEL; b2 INV_ANGLE; b3 INV_RATE; b4 FILT_MODE (1 = complementary)
+SENS,sensor_pipeline,0x10002008,0x08,FILT_SHIFT,RW,0x22,[2:0] angle log2 N (0-4); [6:4] rate log2 N
+SENS,sensor_pipeline,0x1000200C,0x0C,ANGLE_TRIM,RW,0,"Q16.16, subtracted from the filtered angle"
+SENS,sensor_pipeline,0x10002010,0x10,STATUS,RO,0,b0 CAL_BUSY; b1 CAL_DONE; b2 DATA_FRESH (a sample arrived within the last 2 ticks)
+SENS,sensor_pipeline,0x10002014,0x14,GYRO_BIAS_X,RO,0,signed
+SENS,sensor_pipeline,0x10002018,0x18,GYRO_BIAS_Y,RO,0,signed
+SENS,sensor_pipeline,0x1000201C,0x1C,GYRO_BIAS_Z,RO,0,signed
+SENS,sensor_pipeline,0x10002020,0x20,ANGLE_RAW,RO,0,"after conversion, before filter"
+SENS,sensor_pipeline,0x10002024,0x24,ANGLE_FILT,RO,0,after filter and trim
+SENS,sensor_pipeline,0x10002028,0x28,RATE_FILT,RO,0,filtered rate
+SENS,sensor_pipeline,0x1000202C,0x2C,ERROR,RO,0,setpoint - angle
+SENS,sensor_pipeline,0x10002030,0x30,SEQ_COUNT,RO,0,samples processed
+PID,hw_pid_accel,0x10003000,0x00,ID,RO,0x50494401,"""PID"" + version 01"
+PID,hw_pid_accel,0x10003004,0x04,CTRL,RW,"b0=DEF_EN, b2=1",b0 EN; b1 CLR_INT (SC); b2 D_SRC (1 = D from gyro rate)
+PID,hw_pid_accel,0x10003008,0x08,KP,RW,DEF_KP,Q16.16
+PID,hw_pid_accel,0x1000300C,0x0C,KI,RW,DEF_KI,"Q16.16, pre-multiplied by Ts (Ki*Ts)"
+PID,hw_pid_accel,0x10003010,0x10,KD,RW,DEF_KD,Q16.16 (rad/s when D_SRC=1)
+PID,hw_pid_accel,0x10003014,0x14,SETPOINT,RW,DEF_SETPOINT,Q16.16 rad
+PID,hw_pid_accel,0x10003018,0x18,INT_LIMIT,RW,19661,max |integrator| (0.3)
+PID,hw_pid_accel,0x1000301C,0x1C,OUT_LIMIT,RW,DEF_OUT_LIMIT (16384),"output clamp, max 65536"
+PID,hw_pid_accel,0x10003020,0x20,STATUS,RO/W1C,0,b0 SAT (live); b1 SAT_STICKY (W1C); b2 ACTIVE
+PID,hw_pid_accel,0x10003024,0x24,P_TERM,RO,0,last P term
+PID,hw_pid_accel,0x10003028,0x28,I_TERM,RO,0,integrator
+PID,hw_pid_accel,0x1000302C,0x2C,D_TERM,RO,0,last D term
+PID,hw_pid_accel,0x10003030,0x30,U_OUT,RO,0,last output
+PWM,actuation_subsystem,0x10004000,0x00,ID,RO,0x50574D01,"""PWM"" + version 01"
+PWM,actuation_subsystem,0x10004004,0x04,CTRL,RW,"b0=DEF_EN, b4=1",b0 EN; b1 SLEW_EN; b2 DIR_INV_L; b3 DIR_INV_R; b4 CLAMP_EN
+PWM,actuation_subsystem,0x10004008,0x08,PERIOD,RW,2500,PWM period in clk cycles (20 kHz); applies at the period wrap
+PWM,actuation_subsystem,0x1000400C,0x0C,MAX_DUTY,RW,0xE666,Q0.16 max duty (0.9)
+PWM,actuation_subsystem,0x10004010,0x10,DEADTIME,RW,250,"clk cycles, both outputs low on reversal (5 us)"
+PWM,actuation_subsystem,0x10004014,0x14,SLEW_STEP,RW,6554,"max command change per update, Q16.16 (0.1)"
+PWM,actuation_subsystem,0x10004018,0x18,STEER,RW,0,"Q16.16: left = cmd + steer, right = cmd - steer"
+PWM,actuation_subsystem,0x1000401C,0x1C,GAIN_L,RW,65536,Q16.16 left gain
+PWM,actuation_subsystem,0x10004020,0x20,GAIN_R,RW,65536,Q16.16 right gain
+PWM,actuation_subsystem,0x10004024,0x24,STATUS,RO,0,"b0 ENABLED; b1 CLAMPED (sticky, W1C); b2 IN_DEADTIME_L; b3 IN_DEADTIME_R"
+PWM,actuation_subsystem,0x10004028,0x28,DUTY_L,RO,0,current duty counts
+PWM,actuation_subsystem,0x1000402C,0x2C,DUTY_R,RO,0,current duty counts
+SAFE,safety_fault_monitor,0x10005000,0x00,ID,RO,0x53414601,"""SAF"" + version 01"
+SAFE,safety_fault_monitor,0x10005004,0x04,CTRL,RW,0x04 | DEF_WD_EN<<1 | DEF_EN,b0 ARM; b1 WD_EN; b2 TILT_EN (reset 1); b3 FAULT_CLR (SC); b4 IRQ_EN
+SAFE,safety_fault_monitor,0x10005008,0x08,WD_KICK,WO,-,any write restarts the watchdog
+SAFE,safety_fault_monitor,0x1000500C,0x0C,TILT_LIMIT,RW,39322,"Q16.16 rad (0.6), compared with |angle|"
+SAFE,safety_fault_monitor,0x10005010,0x10,SENSOR_TIMEOUT,RW,8,control ticks without imu_valid
+SAFE,safety_fault_monitor,0x10005014,0x14,SAT_LIMIT,RW,256,consecutive saturated samples
+SAFE,safety_fault_monitor,0x10005018,0x18,WD_TIMEOUT,RW,100,ticks (195 ms) without a kick
+SAFE,safety_fault_monitor,0x1000501C,0x1C,FAULT_STATUS,RO,0,"sticky: b0 TILT, b1 SENSOR_TIMEOUT, b2 I2C_ERR, b3 PID_SAT, b4 WATCHDOG, b5 ESTOP"
+SAFE,safety_fault_monitor,0x10005020,0x20,FAULT_LIVE,RO,0,"same bits, live"
+SAFE,safety_fault_monitor,0x10005024,0x24,STATE,RO,0,"0 DISARMED, 1 ARMED, 2 FAULT"
+SAFE,safety_fault_monitor,0x10005028,0x28,DBG_OUT,RW,0,firmware LED bits -> dbg_o[7:4]

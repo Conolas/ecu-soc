@@ -1,0 +1,4163 @@
+{
+ "blocks": {
+  "clk_rst_gen": {
+   "name": "clk_rst_gen",
+   "kind": "rtl",
+   "owner": "Vedam",
+   "lang": "Verilog-2001",
+   "ports": [
+    {
+     "name": "clk_in",
+     "dir": "in",
+     "width": 1,
+     "fmt": "clock",
+     "desc": "board clock, already 50 MHz",
+     "tag": ""
+    },
+    {
+     "name": "rst_n_in",
+     "dir": "in",
+     "width": 1,
+     "fmt": "level",
+     "desc": "external reset button, active-low, ASYNC, may bounce",
+     "tag": ""
+    },
+    {
+     "name": "pll_locked_i",
+     "dir": "in",
+     "width": 1,
+     "fmt": "level",
+     "desc": "clock-generator lock (tie 1 if none)",
+     "tag": "fpga"
+    },
+    {
+     "name": "clk",
+     "dir": "out",
+     "width": 1,
+     "fmt": "clock",
+     "desc": "= clk_in",
+     "tag": ""
+    },
+    {
+     "name": "rst_n",
+     "dir": "out",
+     "width": 1,
+     "fmt": "level",
+     "desc": "active-low; asserted asynchronously, released synchronously",
+     "tag": ""
+    }
+   ]
+  },
+  "timer_unit": {
+   "name": "timer_unit",
+   "kind": "rtl",
+   "owner": "Dipiksha",
+   "lang": "Verilog-2001",
+   "params": [
+    "DEF_EN=0",
+    "TICK_PERIOD_DEF=97656",
+    "IRQ_DIV_DEF=51"
+   ],
+   "ports": [
+    {
+     "name": "clk",
+     "dir": "in",
+     "width": 1,
+     "fmt": "clock",
+     "desc": "50 MHz system clock",
+     "tag": ""
+    },
+    {
+     "name": "rst_n",
+     "dir": "in",
+     "width": 1,
+     "fmt": "level",
+     "desc": "active-low reset, synchronous release",
+     "tag": ""
+    },
+    {
+     "name": "s_sel_i",
+     "dir": "in",
+     "width": 1,
+     "fmt": "pulse",
+     "desc": "access this cycle (exactly one cycle per access)",
+     "tag": ""
+    },
+    {
+     "name": "s_we_i",
+     "dir": "in",
+     "width": 1,
+     "fmt": "level",
+     "desc": "1 = write, 0 = read",
+     "tag": ""
+    },
+    {
+     "name": "s_be_i",
+     "dir": "in",
+     "width": 4,
+     "fmt": "mask",
+     "desc": "byte enables (register banks may ignore; RAM must honour)",
+     "tag": ""
+    },
+    {
+     "name": "s_addr_i",
+     "dir": "in",
+     "width": 12,
+     "fmt": "byte offset",
+     "desc": "byte offset inside the region; word aligned, use [11:2]",
+     "tag": ""
+    },
+    {
+     "name": "s_wdata_i",
+     "dir": "in",
+     "width": 32,
+     "fmt": "word",
+     "desc": "write data",
+     "tag": ""
+    },
+    {
+     "name": "s_rdata_o",
+     "dir": "out",
+     "width": 32,
+     "fmt": "word",
+     "desc": "read data, REGISTERED: valid the cycle after s_sel_i",
+     "tag": ""
+    },
+    {
+     "name": "sched_busy_i",
+     "dir": "in",
+     "width": 1,
+     "fmt": "level",
+     "desc": "imu_busy: still reading when the next tick fires => overrun",
+     "tag": ""
+    },
+    {
+     "name": "control_tick_o",
+     "dir": "out",
+     "width": 1,
+     "fmt": "pulse",
+     "desc": "one clk cycle every TICK_PERIOD cycles (about 512 Hz)",
+     "tag": ""
+    },
+    {
+     "name": "irq_timer_o",
+     "dir": "out",
+     "width": 1,
+     "fmt": "level",
+     "desc": "set every IRQ_DIV ticks; cleared by W1C",
+     "tag": ""
+    }
+   ]
+  },
+  "i2c_sensor_subsystem": {
+   "name": "i2c_sensor_subsystem",
+   "kind": "rtl",
+   "owner": "Kaushal",
+   "lang": "Verilog-2001",
+   "params": [
+    "DEF_EN=0",
+    "CLK_DIV_DEF=31",
+    "DEV_ADDR_DEF=7'h68"
+   ],
+   "ports": [
+    {
+     "name": "clk",
+     "dir": "in",
+     "width": 1,
+     "fmt": "clock",
+     "desc": "50 MHz system clock",
+     "tag": ""
+    },
+    {
+     "name": "rst_n",
+     "dir": "in",
+     "width": 1,
+     "fmt": "level",
+     "desc": "active-low reset, synchronous release",
+     "tag": ""
+    },
+    {
+     "name": "s_sel_i",
+     "dir": "in",
+     "width": 1,
+     "fmt": "pulse",
+     "desc": "access this cycle (exactly one cycle per access)",
+     "tag": ""
+    },
+    {
+     "name": "s_we_i",
+     "dir": "in",
+     "width": 1,
+     "fmt": "level",
+     "desc": "1 = write, 0 = read",
+     "tag": ""
+    },
+    {
+     "name": "s_be_i",
+     "dir": "in",
+     "width": 4,
+     "fmt": "mask",
+     "desc": "byte enables (register banks may ignore; RAM must honour)",
+     "tag": ""
+    },
+    {
+     "name": "s_addr_i",
+     "dir": "in",
+     "width": 12,
+     "fmt": "byte offset",
+     "desc": "byte offset inside the region; word aligned, use [11:2]",
+     "tag": ""
+    },
+    {
+     "name": "s_wdata_i",
+     "dir": "in",
+     "width": 32,
+     "fmt": "word",
+     "desc": "write data",
+     "tag": ""
+    },
+    {
+     "name": "s_rdata_o",
+     "dir": "out",
+     "width": 32,
+     "fmt": "word",
+     "desc": "read data, REGISTERED: valid the cycle after s_sel_i",
+     "tag": ""
+    },
+    {
+     "name": "control_tick_i",
+     "dir": "in",
+     "width": 1,
+     "fmt": "pulse",
+     "desc": "start a sample read",
+     "tag": ""
+    },
+    {
+     "name": "scl_i",
+     "dir": "in",
+     "width": 1,
+     "fmt": "level",
+     "desc": "raw SCL pin (2-FF synchronised inside)",
+     "tag": ""
+    },
+    {
+     "name": "sda_i",
+     "dir": "in",
+     "width": 1,
+     "fmt": "level",
+     "desc": "raw SDA pin (2-FF synchronised inside)",
+     "tag": ""
+    },
+    {
+     "name": "scl_drive_low_o",
+     "dir": "out",
+     "width": 1,
+     "fmt": "level",
+     "desc": "1 = pull SCL low, 0 = release (open-drain)",
+     "tag": ""
+    },
+    {
+     "name": "sda_drive_low_o",
+     "dir": "out",
+     "width": 1,
+     "fmt": "level",
+     "desc": "1 = pull SDA low, 0 = release",
+     "tag": ""
+    },
+    {
+     "name": "imu_valid_o",
+     "dir": "out",
+     "width": 1,
+     "fmt": "pulse",
+     "desc": "complete 14-byte sample ready",
+     "tag": ""
+    },
+    {
+     "name": "imu_ax_o",
+     "dir": "out",
+     "width": 16,
+     "fmt": "int16",
+     "desc": "signed raw ax, stable after imu_valid_o",
+     "tag": ""
+    },
+    {
+     "name": "imu_ay_o",
+     "dir": "out",
+     "width": 16,
+     "fmt": "int16",
+     "desc": "signed raw ay, stable after imu_valid_o",
+     "tag": ""
+    },
+    {
+     "name": "imu_az_o",
+     "dir": "out",
+     "width": 16,
+     "fmt": "int16",
+     "desc": "signed raw az, stable after imu_valid_o",
+     "tag": ""
+    },
+    {
+     "name": "imu_gx_o",
+     "dir": "out",
+     "width": 16,
+     "fmt": "int16",
+     "desc": "signed raw gx, stable after imu_valid_o",
+     "tag": ""
+    },
+    {
+     "name": "imu_gy_o",
+     "dir": "out",
+     "width": 16,
+     "fmt": "int16",
+     "desc": "signed raw gy, stable after imu_valid_o",
+     "tag": ""
+    },
+    {
+     "name": "imu_gz_o",
+     "dir": "out",
+     "width": 16,
+     "fmt": "int16",
+     "desc": "signed raw gz, stable after imu_valid_o",
+     "tag": ""
+    },
+    {
+     "name": "imu_busy_o",
+     "dir": "out",
+     "width": 1,
+     "fmt": "level",
+     "desc": "high from tick until imu_valid_o or imu_err_o",
+     "tag": ""
+    },
+    {
+     "name": "imu_err_o",
+     "dir": "out",
+     "width": 1,
+     "fmt": "pulse",
+     "desc": "transaction failed (NACK / timeout)",
+     "tag": ""
+    },
+    {
+     "name": "imu_init_done_o",
+     "dir": "out",
+     "width": 1,
+     "fmt": "level",
+     "desc": "MPU-6050 configured",
+     "tag": ""
+    }
+   ]
+  },
+  "sensor_pipeline": {
+   "name": "sensor_pipeline",
+   "kind": "rtl",
+   "owner": "Dipiksha",
+   "lang": "Verilog-2001",
+   "params": [
+    "DEF_EN=0"
+   ],
+   "ports": [
+    {
+     "name": "clk",
+     "dir": "in",
+     "width": 1,
+     "fmt": "clock",
+     "desc": "50 MHz system clock",
+     "tag": ""
+    },
+    {
+     "name": "rst_n",
+     "dir": "in",
+     "width": 1,
+     "fmt": "level",
+     "desc": "active-low reset, synchronous release",
+     "tag": ""
+    },
+    {
+     "name": "s_sel_i",
+     "dir": "in",
+     "width": 1,
+     "fmt": "pulse",
+     "desc": "access this cycle (exactly one cycle per access)",
+     "tag": ""
+    },
+    {
+     "name": "s_we_i",
+     "dir": "in",
+     "width": 1,
+     "fmt": "level",
+     "desc": "1 = write, 0 = read",
+     "tag": ""
+    },
+    {
+     "name": "s_be_i",
+     "dir": "in",
+     "width": 4,
+     "fmt": "mask",
+     "desc": "byte enables (register banks may ignore; RAM must honour)",
+     "tag": ""
+    },
+    {
+     "name": "s_addr_i",
+     "dir": "in",
+     "width": 12,
+     "fmt": "byte offset",
+     "desc": "byte offset inside the region; word aligned, use [11:2]",
+     "tag": ""
+    },
+    {
+     "name": "s_wdata_i",
+     "dir": "in",
+     "width": 32,
+     "fmt": "word",
+     "desc": "write data",
+     "tag": ""
+    },
+    {
+     "name": "s_rdata_o",
+     "dir": "out",
+     "width": 32,
+     "fmt": "word",
+     "desc": "read data, REGISTERED: valid the cycle after s_sel_i",
+     "tag": ""
+    },
+    {
+     "name": "control_tick_i",
+     "dir": "in",
+     "width": 1,
+     "fmt": "pulse",
+     "desc": "ACR-2: time base for DATA_FRESH (sample within last 2 ticks)",
+     "tag": ""
+    },
+    {
+     "name": "imu_valid_i",
+     "dir": "in",
+     "width": 1,
+     "fmt": "pulse",
+     "desc": "sample ready",
+     "tag": ""
+    },
+    {
+     "name": "imu_ax_i",
+     "dir": "in",
+     "width": 16,
+     "fmt": "int16",
+     "desc": "signed raw ax",
+     "tag": ""
+    },
+    {
+     "name": "imu_ay_i",
+     "dir": "in",
+     "width": 16,
+     "fmt": "int16",
+     "desc": "signed raw ay",
+     "tag": ""
+    },
+    {
+     "name": "imu_az_i",
+     "dir": "in",
+     "width": 16,
+     "fmt": "int16",
+     "desc": "signed raw az",
+     "tag": ""
+    },
+    {
+     "name": "imu_gx_i",
+     "dir": "in",
+     "width": 16,
+     "fmt": "int16",
+     "desc": "signed raw gx",
+     "tag": ""
+    },
+    {
+     "name": "imu_gy_i",
+     "dir": "in",
+     "width": 16,
+     "fmt": "int16",
+     "desc": "signed raw gy",
+     "tag": ""
+    },
+    {
+     "name": "imu_gz_i",
+     "dir": "in",
+     "width": 16,
+     "fmt": "int16",
+     "desc": "signed raw gz",
+     "tag": ""
+    },
+    {
+     "name": "imu_init_done_i",
+     "dir": "in",
+     "width": 1,
+     "fmt": "level",
+     "desc": "calibration waits for this",
+     "tag": ""
+    },
+    {
+     "name": "setpoint_i",
+     "dir": "in",
+     "width": 32,
+     "fmt": "Q16.16 rad",
+     "desc": "balance setpoint from PID bank",
+     "tag": ""
+    },
+    {
+     "name": "pipe_valid_o",
+     "dir": "out",
+     "width": 1,
+     "fmt": "pulse",
+     "desc": "angle_o, err_o, rate_o valid together",
+     "tag": ""
+    },
+    {
+     "name": "angle_o",
+     "dir": "out",
+     "width": 32,
+     "fmt": "Q16.16 rad",
+     "desc": "filtered + trimmed; + = leaning forward",
+     "tag": ""
+    },
+    {
+     "name": "err_o",
+     "dir": "out",
+     "width": 32,
+     "fmt": "Q16.16",
+     "desc": "setpoint_i - angle",
+     "tag": ""
+    },
+    {
+     "name": "rate_o",
+     "dir": "out",
+     "width": 32,
+     "fmt": "Q16.16 rad/s",
+     "desc": "filtered, bias-corrected",
+     "tag": ""
+    },
+    {
+     "name": "calib_done_o",
+     "dir": "out",
+     "width": 1,
+     "fmt": "level",
+     "desc": "gyro bias captured",
+     "tag": ""
+    }
+   ]
+  },
+  "hw_pid_accel": {
+   "name": "hw_pid_accel",
+   "kind": "rtl",
+   "owner": "Conolas",
+   "lang": "Verilog-2001",
+   "params": [
+    "DEF_EN=0",
+    "DEF_KP=0",
+    "DEF_KI=0",
+    "DEF_KD=0",
+    "DEF_SETPOINT=0",
+    "DEF_OUT_LIMIT=16384"
+   ],
+   "ports": [
+    {
+     "name": "clk",
+     "dir": "in",
+     "width": 1,
+     "fmt": "clock",
+     "desc": "50 MHz system clock",
+     "tag": ""
+    },
+    {
+     "name": "rst_n",
+     "dir": "in",
+     "width": 1,
+     "fmt": "level",
+     "desc": "active-low reset, synchronous release",
+     "tag": ""
+    },
+    {
+     "name": "s_sel_i",
+     "dir": "in",
+     "width": 1,
+     "fmt": "pulse",
+     "desc": "access this cycle (exactly one cycle per access)",
+     "tag": ""
+    },
+    {
+     "name": "s_we_i",
+     "dir": "in",
+     "width": 1,
+     "fmt": "level",
+     "desc": "1 = write, 0 = read",
+     "tag": ""
+    },
+    {
+     "name": "s_be_i",
+     "dir": "in",
+     "width": 4,
+     "fmt": "mask",
+     "desc": "byte enables (register banks may ignore; RAM must honour)",
+     "tag": ""
+    },
+    {
+     "name": "s_addr_i",
+     "dir": "in",
+     "width": 12,
+     "fmt": "byte offset",
+     "desc": "byte offset inside the region; word aligned, use [11:2]",
+     "tag": ""
+    },
+    {
+     "name": "s_wdata_i",
+     "dir": "in",
+     "width": 32,
+     "fmt": "word",
+     "desc": "write data",
+     "tag": ""
+    },
+    {
+     "name": "s_rdata_o",
+     "dir": "out",
+     "width": 32,
+     "fmt": "word",
+     "desc": "read data, REGISTERED: valid the cycle after s_sel_i",
+     "tag": ""
+    },
+    {
+     "name": "err_valid_i",
+     "dir": "in",
+     "width": 1,
+     "fmt": "pulse",
+     "desc": "pipe_valid",
+     "tag": ""
+    },
+    {
+     "name": "err_i",
+     "dir": "in",
+     "width": 32,
+     "fmt": "Q16.16",
+     "desc": "setpoint - angle",
+     "tag": ""
+    },
+    {
+     "name": "rate_i",
+     "dir": "in",
+     "width": 32,
+     "fmt": "Q16.16 rad/s",
+     "desc": "filtered rate",
+     "tag": ""
+    },
+    {
+     "name": "run_i",
+     "dir": "in",
+     "width": 1,
+     "fmt": "level",
+     "desc": "pwm_enable: 0 => output 0, integrator cleared",
+     "tag": ""
+    },
+    {
+     "name": "pwm_cmd_o",
+     "dir": "out",
+     "width": 32,
+     "fmt": "Q16.16 [-1,+1]",
+     "desc": "clamped to +-OUT_LIMIT",
+     "tag": ""
+    },
+    {
+     "name": "pwm_cmd_valid_o",
+     "dir": "out",
+     "width": 1,
+     "fmt": "pulse",
+     "desc": "new command (also pulses with 0 when not running)",
+     "tag": ""
+    },
+    {
+     "name": "pid_sat_o",
+     "dir": "out",
+     "width": 1,
+     "fmt": "level",
+     "desc": "last output was clamped",
+     "tag": ""
+    },
+    {
+     "name": "setpoint_o",
+     "dir": "out",
+     "width": 32,
+     "fmt": "Q16.16 rad",
+     "desc": "SETPOINT register -> sensor_pipeline",
+     "tag": ""
+    }
+   ]
+  },
+  "actuation_subsystem": {
+   "name": "actuation_subsystem",
+   "kind": "rtl",
+   "owner": "Jaydev",
+   "lang": "Verilog-2001",
+   "params": [
+    "DEF_EN=0",
+    "PERIOD_DEF=2500",
+    "DEADTIME_DEF=250"
+   ],
+   "ports": [
+    {
+     "name": "clk",
+     "dir": "in",
+     "width": 1,
+     "fmt": "clock",
+     "desc": "50 MHz system clock",
+     "tag": ""
+    },
+    {
+     "name": "rst_n",
+     "dir": "in",
+     "width": 1,
+     "fmt": "level",
+     "desc": "active-low reset, synchronous release",
+     "tag": ""
+    },
+    {
+     "name": "s_sel_i",
+     "dir": "in",
+     "width": 1,
+     "fmt": "pulse",
+     "desc": "access this cycle (exactly one cycle per access)",
+     "tag": ""
+    },
+    {
+     "name": "s_we_i",
+     "dir": "in",
+     "width": 1,
+     "fmt": "level",
+     "desc": "1 = write, 0 = read",
+     "tag": ""
+    },
+    {
+     "name": "s_be_i",
+     "dir": "in",
+     "width": 4,
+     "fmt": "mask",
+     "desc": "byte enables (register banks may ignore; RAM must honour)",
+     "tag": ""
+    },
+    {
+     "name": "s_addr_i",
+     "dir": "in",
+     "width": 12,
+     "fmt": "byte offset",
+     "desc": "byte offset inside the region; word aligned, use [11:2]",
+     "tag": ""
+    },
+    {
+     "name": "s_wdata_i",
+     "dir": "in",
+     "width": 32,
+     "fmt": "word",
+     "desc": "write data",
+     "tag": ""
+    },
+    {
+     "name": "s_rdata_o",
+     "dir": "out",
+     "width": 32,
+     "fmt": "word",
+     "desc": "read data, REGISTERED: valid the cycle after s_sel_i",
+     "tag": ""
+    },
+    {
+     "name": "cmd_valid_i",
+     "dir": "in",
+     "width": 1,
+     "fmt": "pulse",
+     "desc": "new command (about 512 Hz)",
+     "tag": ""
+    },
+    {
+     "name": "cmd_i",
+     "dir": "in",
+     "width": 32,
+     "fmt": "Q16.16 [-1,+1]",
+     "desc": "balance command from PID",
+     "tag": ""
+    },
+    {
+     "name": "pwm_enable_i",
+     "dir": "in",
+     "width": 1,
+     "fmt": "level",
+     "desc": "from safety: 0 => everything off",
+     "tag": ""
+    },
+    {
+     "name": "bench_en_i",
+     "dir": "in",
+     "width": 1,
+     "fmt": "level",
+     "desc": "1 = ignore cmd_i, use bench table",
+     "tag": "bringup"
+    },
+    {
+     "name": "bench_sel_i",
+     "dir": "in",
+     "width": 2,
+     "fmt": "code",
+     "desc": "00 -> 0, 01 -> +0.25, 10 -> -0.25, 11 -> +0.5",
+     "tag": "bringup"
+    },
+    {
+     "name": "l_rpwm_o",
+     "dir": "out",
+     "width": 1,
+     "fmt": "level",
+     "desc": "left BTS7960 RPWM",
+     "tag": ""
+    },
+    {
+     "name": "l_lpwm_o",
+     "dir": "out",
+     "width": 1,
+     "fmt": "level",
+     "desc": "left BTS7960 LPWM",
+     "tag": ""
+    },
+    {
+     "name": "l_r_en_o",
+     "dir": "out",
+     "width": 1,
+     "fmt": "level",
+     "desc": "left BTS7960 R_EN",
+     "tag": ""
+    },
+    {
+     "name": "l_l_en_o",
+     "dir": "out",
+     "width": 1,
+     "fmt": "level",
+     "desc": "left BTS7960 L_EN",
+     "tag": ""
+    },
+    {
+     "name": "r_rpwm_o",
+     "dir": "out",
+     "width": 1,
+     "fmt": "level",
+     "desc": "right BTS7960 RPWM",
+     "tag": ""
+    },
+    {
+     "name": "r_lpwm_o",
+     "dir": "out",
+     "width": 1,
+     "fmt": "level",
+     "desc": "right BTS7960 LPWM",
+     "tag": ""
+    },
+    {
+     "name": "r_r_en_o",
+     "dir": "out",
+     "width": 1,
+     "fmt": "level",
+     "desc": "right BTS7960 R_EN",
+     "tag": ""
+    },
+    {
+     "name": "r_l_en_o",
+     "dir": "out",
+     "width": 1,
+     "fmt": "level",
+     "desc": "right BTS7960 L_EN",
+     "tag": ""
+    },
+    {
+     "name": "duty_l_o",
+     "dir": "out",
+     "width": 16,
+     "fmt": "counts",
+     "desc": "current left duty counts (debug)",
+     "tag": "dbg"
+    },
+    {
+     "name": "duty_r_o",
+     "dir": "out",
+     "width": 16,
+     "fmt": "counts",
+     "desc": "current right duty counts (debug)",
+     "tag": "dbg"
+    }
+   ]
+  },
+  "safety_fault_monitor": {
+   "name": "safety_fault_monitor",
+   "kind": "rtl",
+   "owner": "Vedam",
+   "lang": "Verilog-2001",
+   "params": [
+    "DEF_EN=0",
+    "DEF_WD_EN=0"
+   ],
+   "ports": [
+    {
+     "name": "clk",
+     "dir": "in",
+     "width": 1,
+     "fmt": "clock",
+     "desc": "50 MHz system clock",
+     "tag": ""
+    },
+    {
+     "name": "rst_n",
+     "dir": "in",
+     "width": 1,
+     "fmt": "level",
+     "desc": "active-low reset, synchronous release",
+     "tag": ""
+    },
+    {
+     "name": "s_sel_i",
+     "dir": "in",
+     "width": 1,
+     "fmt": "pulse",
+     "desc": "access this cycle (exactly one cycle per access)",
+     "tag": ""
+    },
+    {
+     "name": "s_we_i",
+     "dir": "in",
+     "width": 1,
+     "fmt": "level",
+     "desc": "1 = write, 0 = read",
+     "tag": ""
+    },
+    {
+     "name": "s_be_i",
+     "dir": "in",
+     "width": 4,
+     "fmt": "mask",
+     "desc": "byte enables (register banks may ignore; RAM must honour)",
+     "tag": ""
+    },
+    {
+     "name": "s_addr_i",
+     "dir": "in",
+     "width": 12,
+     "fmt": "byte offset",
+     "desc": "byte offset inside the region; word aligned, use [11:2]",
+     "tag": ""
+    },
+    {
+     "name": "s_wdata_i",
+     "dir": "in",
+     "width": 32,
+     "fmt": "word",
+     "desc": "write data",
+     "tag": ""
+    },
+    {
+     "name": "s_rdata_o",
+     "dir": "out",
+     "width": 32,
+     "fmt": "word",
+     "desc": "read data, REGISTERED: valid the cycle after s_sel_i",
+     "tag": ""
+    },
+    {
+     "name": "control_tick_i",
+     "dir": "in",
+     "width": 1,
+     "fmt": "pulse",
+     "desc": "time base for time-outs and watchdog",
+     "tag": ""
+    },
+    {
+     "name": "imu_valid_i",
+     "dir": "in",
+     "width": 1,
+     "fmt": "pulse",
+     "desc": "sample received",
+     "tag": ""
+    },
+    {
+     "name": "imu_err_i",
+     "dir": "in",
+     "width": 1,
+     "fmt": "pulse",
+     "desc": "I2C transaction failed",
+     "tag": ""
+    },
+    {
+     "name": "imu_init_done_i",
+     "dir": "in",
+     "width": 1,
+     "fmt": "level",
+     "desc": "sensor configured",
+     "tag": ""
+    },
+    {
+     "name": "calib_done_i",
+     "dir": "in",
+     "width": 1,
+     "fmt": "level",
+     "desc": "gyro bias captured",
+     "tag": ""
+    },
+    {
+     "name": "pipe_valid_i",
+     "dir": "in",
+     "width": 1,
+     "fmt": "pulse",
+     "desc": "angle_i valid",
+     "tag": ""
+    },
+    {
+     "name": "angle_i",
+     "dir": "in",
+     "width": 32,
+     "fmt": "Q16.16 rad",
+     "desc": "filtered angle",
+     "tag": ""
+    },
+    {
+     "name": "pid_sat_i",
+     "dir": "in",
+     "width": 1,
+     "fmt": "level",
+     "desc": "PID output clamped",
+     "tag": ""
+    },
+    {
+     "name": "estop_n_i",
+     "dir": "in",
+     "width": 1,
+     "fmt": "level",
+     "desc": "hardware E-stop, active-low, raw (synchronised inside)",
+     "tag": ""
+    },
+    {
+     "name": "arm_sw_i",
+     "dir": "in",
+     "width": 1,
+     "fmt": "level",
+     "desc": "arm switch, raw (synchronised inside); tie 0 in final SoC",
+     "tag": "bringup"
+    },
+    {
+     "name": "pwm_enable_o",
+     "dir": "out",
+     "width": 1,
+     "fmt": "level",
+     "desc": "1 = motors allowed; default 0; registered",
+     "tag": ""
+    },
+    {
+     "name": "irq_fault_o",
+     "dir": "out",
+     "width": 1,
+     "fmt": "level",
+     "desc": "IRQ_EN & any sticky fault",
+     "tag": ""
+    },
+    {
+     "name": "dbg_o",
+     "dir": "out",
+     "width": 8,
+     "fmt": "LED bits",
+     "desc": "[3:0]={calib_done,init_done,fault_any,pwm_enable}, [7:4]=DBG_OUT[7:4]",
+     "tag": "dbg"
+    }
+   ]
+  },
+  "rom_dp": {
+   "name": "rom_dp",
+   "kind": "rtl",
+   "owner": "Vedam",
+   "lang": "Verilog-2001",
+   "params": [
+    "ROM_WORDS=2048",
+    "INIT_FILE=\"firmware.hex\""
+   ],
+   "ports": [
+    {
+     "name": "clk",
+     "dir": "in",
+     "width": 1,
+     "fmt": "clock",
+     "desc": "50 MHz",
+     "tag": ""
+    },
+    {
+     "name": "ia_req_i",
+     "dir": "in",
+     "width": 1,
+     "fmt": "pulse",
+     "desc": "instruction fetch request",
+     "tag": ""
+    },
+    {
+     "name": "ia_addr_i",
+     "dir": "in",
+     "width": 13,
+     "fmt": "byte addr",
+     "desc": "use [12:2] as word index",
+     "tag": ""
+    },
+    {
+     "name": "ia_rdata_o",
+     "dir": "out",
+     "width": 32,
+     "fmt": "word",
+     "desc": "registered: valid the cycle after ia_req_i",
+     "tag": ""
+    },
+    {
+     "name": "s_sel_i",
+     "dir": "in",
+     "width": 1,
+     "fmt": "pulse",
+     "desc": "data-side read request",
+     "tag": ""
+    },
+    {
+     "name": "s_addr_i",
+     "dir": "in",
+     "width": 13,
+     "fmt": "byte addr",
+     "desc": "data-side address",
+     "tag": ""
+    },
+    {
+     "name": "s_rdata_o",
+     "dir": "out",
+     "width": 32,
+     "fmt": "word",
+     "desc": "registered",
+     "tag": ""
+    }
+   ]
+  },
+  "ram_sp": {
+   "name": "ram_sp",
+   "kind": "rtl",
+   "owner": "Vedam",
+   "lang": "Verilog-2001",
+   "params": [
+    "RAM_WORDS=1024"
+   ],
+   "ports": [
+    {
+     "name": "clk",
+     "dir": "in",
+     "width": 1,
+     "fmt": "clock",
+     "desc": "50 MHz",
+     "tag": ""
+    },
+    {
+     "name": "s_sel_i",
+     "dir": "in",
+     "width": 1,
+     "fmt": "pulse",
+     "desc": "access this cycle (exactly one cycle per access)",
+     "tag": ""
+    },
+    {
+     "name": "s_we_i",
+     "dir": "in",
+     "width": 1,
+     "fmt": "level",
+     "desc": "1 = write, 0 = read",
+     "tag": ""
+    },
+    {
+     "name": "s_be_i",
+     "dir": "in",
+     "width": 4,
+     "fmt": "mask",
+     "desc": "byte enables (register banks may ignore; RAM must honour)",
+     "tag": ""
+    },
+    {
+     "name": "s_addr_i",
+     "dir": "in",
+     "width": 12,
+     "fmt": "byte offset",
+     "desc": "byte offset inside the region; word aligned, use [11:2]",
+     "tag": ""
+    },
+    {
+     "name": "s_wdata_i",
+     "dir": "in",
+     "width": 32,
+     "fmt": "word",
+     "desc": "write data",
+     "tag": ""
+    },
+    {
+     "name": "s_rdata_o",
+     "dir": "out",
+     "width": 32,
+     "fmt": "word",
+     "desc": "read data, REGISTERED: valid the cycle after s_sel_i",
+     "tag": ""
+    }
+   ]
+  },
+  "bus_interconnect": {
+   "name": "bus_interconnect",
+   "kind": "rtl",
+   "owner": "Vedam",
+   "lang": "Verilog-2001",
+   "params": [
+    "ROM_BASE",
+    "ROM_MASK",
+    "RAM_BASE",
+    "BANK_BASE (localparams)"
+   ],
+   "ports": [
+    {
+     "name": "clk",
+     "dir": "in",
+     "width": 1,
+     "fmt": "clock",
+     "desc": "50 MHz system clock",
+     "tag": ""
+    },
+    {
+     "name": "rst_n",
+     "dir": "in",
+     "width": 1,
+     "fmt": "level",
+     "desc": "active-low reset, synchronous release",
+     "tag": ""
+    },
+    {
+     "name": "instr_req_i",
+     "dir": "in",
+     "width": 1,
+     "fmt": "level",
+     "desc": "from Ibex",
+     "tag": ""
+    },
+    {
+     "name": "instr_addr_i",
+     "dir": "in",
+     "width": 32,
+     "fmt": "byte addr",
+     "desc": "from Ibex",
+     "tag": ""
+    },
+    {
+     "name": "instr_gnt_o",
+     "dir": "out",
+     "width": 1,
+     "fmt": "level",
+     "desc": "= instr_req_i (same cycle)",
+     "tag": ""
+    },
+    {
+     "name": "instr_rvalid_o",
+     "dir": "out",
+     "width": 1,
+     "fmt": "pulse",
+     "desc": "one cycle after the request",
+     "tag": ""
+    },
+    {
+     "name": "instr_rdata_o",
+     "dir": "out",
+     "width": 32,
+     "fmt": "word",
+     "desc": "ROM word",
+     "tag": ""
+    },
+    {
+     "name": "instr_err_o",
+     "dir": "out",
+     "width": 1,
+     "fmt": "level",
+     "desc": "fetch outside ROM",
+     "tag": ""
+    },
+    {
+     "name": "data_req_i",
+     "dir": "in",
+     "width": 1,
+     "fmt": "level",
+     "desc": "from Ibex",
+     "tag": ""
+    },
+    {
+     "name": "data_we_i",
+     "dir": "in",
+     "width": 1,
+     "fmt": "level",
+     "desc": "1 = store",
+     "tag": ""
+    },
+    {
+     "name": "data_be_i",
+     "dir": "in",
+     "width": 4,
+     "fmt": "mask",
+     "desc": "byte enables",
+     "tag": ""
+    },
+    {
+     "name": "data_addr_i",
+     "dir": "in",
+     "width": 32,
+     "fmt": "byte addr",
+     "desc": "from Ibex",
+     "tag": ""
+    },
+    {
+     "name": "data_wdata_i",
+     "dir": "in",
+     "width": 32,
+     "fmt": "word",
+     "desc": "from Ibex",
+     "tag": ""
+    },
+    {
+     "name": "data_gnt_o",
+     "dir": "out",
+     "width": 1,
+     "fmt": "level",
+     "desc": "= data_req_i (same cycle)",
+     "tag": ""
+    },
+    {
+     "name": "data_rvalid_o",
+     "dir": "out",
+     "width": 1,
+     "fmt": "pulse",
+     "desc": "one cycle later, reads AND writes",
+     "tag": ""
+    },
+    {
+     "name": "data_rdata_o",
+     "dir": "out",
+     "width": 32,
+     "fmt": "word",
+     "desc": "registered read mux",
+     "tag": ""
+    },
+    {
+     "name": "data_err_o",
+     "dir": "out",
+     "width": 1,
+     "fmt": "level",
+     "desc": "unmapped address or write to ROM",
+     "tag": ""
+    },
+    {
+     "name": "rom_ia_req_o",
+     "dir": "out",
+     "width": 1,
+     "fmt": "pulse",
+     "desc": "ROM instruction port request",
+     "tag": ""
+    },
+    {
+     "name": "rom_ia_addr_o",
+     "dir": "out",
+     "width": 13,
+     "fmt": "byte addr",
+     "desc": "ROM instruction address",
+     "tag": ""
+    },
+    {
+     "name": "rom_ia_rdata_i",
+     "dir": "in",
+     "width": 32,
+     "fmt": "word",
+     "desc": "ROM instruction data",
+     "tag": ""
+    },
+    {
+     "name": "rom_sel_o",
+     "dir": "out",
+     "width": 1,
+     "fmt": "pulse",
+     "desc": "ROM data-read select",
+     "tag": ""
+    },
+    {
+     "name": "rom_addr_o",
+     "dir": "out",
+     "width": 13,
+     "fmt": "byte addr",
+     "desc": "ROM data address",
+     "tag": ""
+    },
+    {
+     "name": "rom_rdata_i",
+     "dir": "in",
+     "width": 32,
+     "fmt": "word",
+     "desc": "ROM data",
+     "tag": ""
+    },
+    {
+     "name": "ram_sel_o",
+     "dir": "out",
+     "width": 1,
+     "fmt": "pulse",
+     "desc": "RAM select",
+     "tag": ""
+    },
+    {
+     "name": "ram_we_o",
+     "dir": "out",
+     "width": 1,
+     "fmt": "level",
+     "desc": "RAM write",
+     "tag": ""
+    },
+    {
+     "name": "ram_be_o",
+     "dir": "out",
+     "width": 4,
+     "fmt": "mask",
+     "desc": "RAM byte enables",
+     "tag": ""
+    },
+    {
+     "name": "ram_addr_o",
+     "dir": "out",
+     "width": 12,
+     "fmt": "byte offset",
+     "desc": "RAM address",
+     "tag": ""
+    },
+    {
+     "name": "ram_wdata_o",
+     "dir": "out",
+     "width": 32,
+     "fmt": "word",
+     "desc": "RAM write data",
+     "tag": ""
+    },
+    {
+     "name": "ram_rdata_i",
+     "dir": "in",
+     "width": 32,
+     "fmt": "word",
+     "desc": "RAM read data",
+     "tag": ""
+    },
+    {
+     "name": "tmr_sel_o",
+     "dir": "out",
+     "width": 1,
+     "fmt": "pulse",
+     "desc": "TMR bank slave bus",
+     "tag": ""
+    },
+    {
+     "name": "tmr_we_o",
+     "dir": "out",
+     "width": 1,
+     "fmt": "level",
+     "desc": "TMR bank slave bus",
+     "tag": ""
+    },
+    {
+     "name": "tmr_be_o",
+     "dir": "out",
+     "width": 4,
+     "fmt": "mask",
+     "desc": "TMR bank slave bus",
+     "tag": ""
+    },
+    {
+     "name": "tmr_addr_o",
+     "dir": "out",
+     "width": 12,
+     "fmt": "byte offset",
+     "desc": "TMR bank slave bus",
+     "tag": ""
+    },
+    {
+     "name": "tmr_wdata_o",
+     "dir": "out",
+     "width": 32,
+     "fmt": "word",
+     "desc": "TMR bank slave bus",
+     "tag": ""
+    },
+    {
+     "name": "tmr_rdata_i",
+     "dir": "in",
+     "width": 32,
+     "fmt": "word",
+     "desc": "TMR bank slave bus",
+     "tag": ""
+    },
+    {
+     "name": "i2c_sel_o",
+     "dir": "out",
+     "width": 1,
+     "fmt": "pulse",
+     "desc": "I2C bank slave bus",
+     "tag": ""
+    },
+    {
+     "name": "i2c_we_o",
+     "dir": "out",
+     "width": 1,
+     "fmt": "level",
+     "desc": "I2C bank slave bus",
+     "tag": ""
+    },
+    {
+     "name": "i2c_be_o",
+     "dir": "out",
+     "width": 4,
+     "fmt": "mask",
+     "desc": "I2C bank slave bus",
+     "tag": ""
+    },
+    {
+     "name": "i2c_addr_o",
+     "dir": "out",
+     "width": 12,
+     "fmt": "byte offset",
+     "desc": "I2C bank slave bus",
+     "tag": ""
+    },
+    {
+     "name": "i2c_wdata_o",
+     "dir": "out",
+     "width": 32,
+     "fmt": "word",
+     "desc": "I2C bank slave bus",
+     "tag": ""
+    },
+    {
+     "name": "i2c_rdata_i",
+     "dir": "in",
+     "width": 32,
+     "fmt": "word",
+     "desc": "I2C bank slave bus",
+     "tag": ""
+    },
+    {
+     "name": "sens_sel_o",
+     "dir": "out",
+     "width": 1,
+     "fmt": "pulse",
+     "desc": "SENS bank slave bus",
+     "tag": ""
+    },
+    {
+     "name": "sens_we_o",
+     "dir": "out",
+     "width": 1,
+     "fmt": "level",
+     "desc": "SENS bank slave bus",
+     "tag": ""
+    },
+    {
+     "name": "sens_be_o",
+     "dir": "out",
+     "width": 4,
+     "fmt": "mask",
+     "desc": "SENS bank slave bus",
+     "tag": ""
+    },
+    {
+     "name": "sens_addr_o",
+     "dir": "out",
+     "width": 12,
+     "fmt": "byte offset",
+     "desc": "SENS bank slave bus",
+     "tag": ""
+    },
+    {
+     "name": "sens_wdata_o",
+     "dir": "out",
+     "width": 32,
+     "fmt": "word",
+     "desc": "SENS bank slave bus",
+     "tag": ""
+    },
+    {
+     "name": "sens_rdata_i",
+     "dir": "in",
+     "width": 32,
+     "fmt": "word",
+     "desc": "SENS bank slave bus",
+     "tag": ""
+    },
+    {
+     "name": "pid_sel_o",
+     "dir": "out",
+     "width": 1,
+     "fmt": "pulse",
+     "desc": "PID bank slave bus",
+     "tag": ""
+    },
+    {
+     "name": "pid_we_o",
+     "dir": "out",
+     "width": 1,
+     "fmt": "level",
+     "desc": "PID bank slave bus",
+     "tag": ""
+    },
+    {
+     "name": "pid_be_o",
+     "dir": "out",
+     "width": 4,
+     "fmt": "mask",
+     "desc": "PID bank slave bus",
+     "tag": ""
+    },
+    {
+     "name": "pid_addr_o",
+     "dir": "out",
+     "width": 12,
+     "fmt": "byte offset",
+     "desc": "PID bank slave bus",
+     "tag": ""
+    },
+    {
+     "name": "pid_wdata_o",
+     "dir": "out",
+     "width": 32,
+     "fmt": "word",
+     "desc": "PID bank slave bus",
+     "tag": ""
+    },
+    {
+     "name": "pid_rdata_i",
+     "dir": "in",
+     "width": 32,
+     "fmt": "word",
+     "desc": "PID bank slave bus",
+     "tag": ""
+    },
+    {
+     "name": "pwm_sel_o",
+     "dir": "out",
+     "width": 1,
+     "fmt": "pulse",
+     "desc": "PWM bank slave bus",
+     "tag": ""
+    },
+    {
+     "name": "pwm_we_o",
+     "dir": "out",
+     "width": 1,
+     "fmt": "level",
+     "desc": "PWM bank slave bus",
+     "tag": ""
+    },
+    {
+     "name": "pwm_be_o",
+     "dir": "out",
+     "width": 4,
+     "fmt": "mask",
+     "desc": "PWM bank slave bus",
+     "tag": ""
+    },
+    {
+     "name": "pwm_addr_o",
+     "dir": "out",
+     "width": 12,
+     "fmt": "byte offset",
+     "desc": "PWM bank slave bus",
+     "tag": ""
+    },
+    {
+     "name": "pwm_wdata_o",
+     "dir": "out",
+     "width": 32,
+     "fmt": "word",
+     "desc": "PWM bank slave bus",
+     "tag": ""
+    },
+    {
+     "name": "pwm_rdata_i",
+     "dir": "in",
+     "width": 32,
+     "fmt": "word",
+     "desc": "PWM bank slave bus",
+     "tag": ""
+    },
+    {
+     "name": "saf_sel_o",
+     "dir": "out",
+     "width": 1,
+     "fmt": "pulse",
+     "desc": "SAF bank slave bus",
+     "tag": ""
+    },
+    {
+     "name": "saf_we_o",
+     "dir": "out",
+     "width": 1,
+     "fmt": "level",
+     "desc": "SAF bank slave bus",
+     "tag": ""
+    },
+    {
+     "name": "saf_be_o",
+     "dir": "out",
+     "width": 4,
+     "fmt": "mask",
+     "desc": "SAF bank slave bus",
+     "tag": ""
+    },
+    {
+     "name": "saf_addr_o",
+     "dir": "out",
+     "width": 12,
+     "fmt": "byte offset",
+     "desc": "SAF bank slave bus",
+     "tag": ""
+    },
+    {
+     "name": "saf_wdata_o",
+     "dir": "out",
+     "width": 32,
+     "fmt": "word",
+     "desc": "SAF bank slave bus",
+     "tag": ""
+    },
+    {
+     "name": "saf_rdata_i",
+     "dir": "in",
+     "width": 32,
+     "fmt": "word",
+     "desc": "SAF bank slave bus",
+     "tag": ""
+    }
+   ]
+  },
+  "cpu_subsystem": {
+   "name": "cpu_subsystem",
+   "kind": "rtl",
+   "owner": "Conolas",
+   "lang": "SystemVerilog (Ibex)",
+   "params": [
+    "BOOT_ADDR=32'h0000_0000"
+   ],
+   "ports": [
+    {
+     "name": "clk",
+     "dir": "in",
+     "width": 1,
+     "fmt": "clock",
+     "desc": "50 MHz system clock",
+     "tag": ""
+    },
+    {
+     "name": "rst_n",
+     "dir": "in",
+     "width": 1,
+     "fmt": "level",
+     "desc": "active-low reset, synchronous release",
+     "tag": ""
+    },
+    {
+     "name": "instr_req_o",
+     "dir": "out",
+     "width": 1,
+     "fmt": "level",
+     "desc": "instruction request",
+     "tag": ""
+    },
+    {
+     "name": "instr_gnt_i",
+     "dir": "in",
+     "width": 1,
+     "fmt": "level",
+     "desc": "granted",
+     "tag": ""
+    },
+    {
+     "name": "instr_rvalid_i",
+     "dir": "in",
+     "width": 1,
+     "fmt": "pulse",
+     "desc": "response valid",
+     "tag": ""
+    },
+    {
+     "name": "instr_addr_o",
+     "dir": "out",
+     "width": 32,
+     "fmt": "byte addr",
+     "desc": "fetch address",
+     "tag": ""
+    },
+    {
+     "name": "instr_rdata_i",
+     "dir": "in",
+     "width": 32,
+     "fmt": "word",
+     "desc": "instruction",
+     "tag": ""
+    },
+    {
+     "name": "instr_err_i",
+     "dir": "in",
+     "width": 1,
+     "fmt": "level",
+     "desc": "bus error",
+     "tag": ""
+    },
+    {
+     "name": "data_req_o",
+     "dir": "out",
+     "width": 1,
+     "fmt": "level",
+     "desc": "data request",
+     "tag": ""
+    },
+    {
+     "name": "data_gnt_i",
+     "dir": "in",
+     "width": 1,
+     "fmt": "level",
+     "desc": "granted",
+     "tag": ""
+    },
+    {
+     "name": "data_rvalid_i",
+     "dir": "in",
+     "width": 1,
+     "fmt": "pulse",
+     "desc": "response valid",
+     "tag": ""
+    },
+    {
+     "name": "data_we_o",
+     "dir": "out",
+     "width": 1,
+     "fmt": "level",
+     "desc": "store",
+     "tag": ""
+    },
+    {
+     "name": "data_be_o",
+     "dir": "out",
+     "width": 4,
+     "fmt": "mask",
+     "desc": "byte enables",
+     "tag": ""
+    },
+    {
+     "name": "data_addr_o",
+     "dir": "out",
+     "width": 32,
+     "fmt": "byte addr",
+     "desc": "address",
+     "tag": ""
+    },
+    {
+     "name": "data_wdata_o",
+     "dir": "out",
+     "width": 32,
+     "fmt": "word",
+     "desc": "write data",
+     "tag": ""
+    },
+    {
+     "name": "data_rdata_i",
+     "dir": "in",
+     "width": 32,
+     "fmt": "word",
+     "desc": "read data",
+     "tag": ""
+    },
+    {
+     "name": "data_err_i",
+     "dir": "in",
+     "width": 1,
+     "fmt": "level",
+     "desc": "bus error",
+     "tag": ""
+    },
+    {
+     "name": "irq_timer_i",
+     "dir": "in",
+     "width": 1,
+     "fmt": "level",
+     "desc": "machine timer interrupt (mcause 7, vector 0x1C)",
+     "tag": ""
+    },
+    {
+     "name": "irq_fault_i",
+     "dir": "in",
+     "width": 1,
+     "fmt": "level",
+     "desc": "machine external interrupt (mcause 11, vector 0x2C)",
+     "tag": ""
+    },
+    {
+     "name": "core_sleep_o",
+     "dir": "out",
+     "width": 1,
+     "fmt": "level",
+     "desc": "high while the core sleeps (wfi)",
+     "tag": "dbg"
+    },
+    {
+     "name": "double_fault_seen_o",
+     "dir": "out",
+     "width": 1,
+     "fmt": "level",
+     "desc": "exception inside an exception handler",
+     "tag": "dbg"
+    }
+   ]
+  },
+  "ecu_soc_top": {
+   "name": "ecu_soc_top",
+   "kind": "top",
+   "owner": "Conolas",
+   "lang": "Verilog-2001",
+   "params": [
+    "HW_ONLY=0 (1 = Wing A runs without CPU; FPGA phase 1 only)"
+   ],
+   "ports": []
+  },
+  "ecu_fpga_top": {
+   "name": "ecu_fpga_top",
+   "kind": "fpga",
+   "owner": "Jaydev",
+   "lang": "Verilog-2001 + FPGA primitives",
+   "params": [
+    "HW_ONLY (passed to ecu_soc_top)"
+   ],
+   "ports": []
+  }
+ },
+ "nets": [
+  {
+   "name": "clk",
+   "width": 1,
+   "driver": "clk_rst_gen.clk",
+   "loads": [
+    "timer_unit.clk",
+    "i2c_sensor_subsystem.clk",
+    "sensor_pipeline.clk",
+    "hw_pid_accel.clk",
+    "actuation_subsystem.clk",
+    "safety_fault_monitor.clk",
+    "rom_dp.clk",
+    "ram_sp.clk",
+    "bus_interconnect.clk",
+    "cpu_subsystem.clk"
+   ],
+   "kind": "clock",
+   "fmt": "clock",
+   "note": "one 50 MHz clock for everything, including Ibex",
+   "tag": ""
+  },
+  {
+   "name": "rst_n",
+   "width": 1,
+   "driver": "clk_rst_gen.rst_n",
+   "loads": [
+    "timer_unit.rst_n",
+    "i2c_sensor_subsystem.rst_n",
+    "sensor_pipeline.rst_n",
+    "hw_pid_accel.rst_n",
+    "actuation_subsystem.rst_n",
+    "safety_fault_monitor.rst_n",
+    "bus_interconnect.rst_n",
+    "cpu_subsystem.rst_n"
+   ],
+   "kind": "level",
+   "fmt": "level",
+   "note": "async assert, sync release",
+   "tag": ""
+  },
+  {
+   "name": "clk_in",
+   "width": 1,
+   "driver": "TOP.clk_in",
+   "loads": [
+    "clk_rst_gen.clk_in"
+   ],
+   "kind": "clock",
+   "fmt": "clock",
+   "note": "board clock",
+   "tag": ""
+  },
+  {
+   "name": "rst_n_in",
+   "width": 1,
+   "driver": "TOP.rst_n_in",
+   "loads": [
+    "clk_rst_gen.rst_n_in"
+   ],
+   "kind": "level",
+   "fmt": "level",
+   "note": "external reset",
+   "tag": ""
+  },
+  {
+   "name": "pll_locked_i",
+   "width": 1,
+   "driver": "TOP.pll_locked_i",
+   "loads": [
+    "clk_rst_gen.pll_locked_i"
+   ],
+   "kind": "level",
+   "fmt": "level",
+   "note": "FPGA clock generator lock",
+   "tag": "fpga"
+  },
+  {
+   "name": "control_tick",
+   "width": 1,
+   "driver": "timer_unit.control_tick_o",
+   "loads": [
+    "i2c_sensor_subsystem.control_tick_i",
+    "sensor_pipeline.control_tick_i",
+    "safety_fault_monitor.control_tick_i"
+   ],
+   "kind": "pulse",
+   "fmt": "pulse",
+   "note": "about 512 Hz sample trigger; sensor_pipeline input added by ACR-2",
+   "tag": ""
+  },
+  {
+   "name": "imu_valid",
+   "width": 1,
+   "driver": "i2c_sensor_subsystem.imu_valid_o",
+   "loads": [
+    "sensor_pipeline.imu_valid_i",
+    "safety_fault_monitor.imu_valid_i"
+   ],
+   "kind": "pulse",
+   "fmt": "pulse",
+   "note": "a full 14-byte sample was read",
+   "tag": ""
+  },
+  {
+   "name": "imu_ax",
+   "width": 16,
+   "driver": "i2c_sensor_subsystem.imu_ax_o",
+   "loads": [
+    "sensor_pipeline.imu_ax_i"
+   ],
+   "kind": "data",
+   "fmt": "int16",
+   "note": "raw IMU value",
+   "tag": ""
+  },
+  {
+   "name": "imu_ay",
+   "width": 16,
+   "driver": "i2c_sensor_subsystem.imu_ay_o",
+   "loads": [
+    "sensor_pipeline.imu_ay_i"
+   ],
+   "kind": "data",
+   "fmt": "int16",
+   "note": "raw IMU value",
+   "tag": ""
+  },
+  {
+   "name": "imu_az",
+   "width": 16,
+   "driver": "i2c_sensor_subsystem.imu_az_o",
+   "loads": [
+    "sensor_pipeline.imu_az_i"
+   ],
+   "kind": "data",
+   "fmt": "int16",
+   "note": "raw IMU value",
+   "tag": ""
+  },
+  {
+   "name": "imu_gx",
+   "width": 16,
+   "driver": "i2c_sensor_subsystem.imu_gx_o",
+   "loads": [
+    "sensor_pipeline.imu_gx_i"
+   ],
+   "kind": "data",
+   "fmt": "int16",
+   "note": "raw IMU value",
+   "tag": ""
+  },
+  {
+   "name": "imu_gy",
+   "width": 16,
+   "driver": "i2c_sensor_subsystem.imu_gy_o",
+   "loads": [
+    "sensor_pipeline.imu_gy_i"
+   ],
+   "kind": "data",
+   "fmt": "int16",
+   "note": "raw IMU value",
+   "tag": ""
+  },
+  {
+   "name": "imu_gz",
+   "width": 16,
+   "driver": "i2c_sensor_subsystem.imu_gz_o",
+   "loads": [
+    "sensor_pipeline.imu_gz_i"
+   ],
+   "kind": "data",
+   "fmt": "int16",
+   "note": "raw IMU value",
+   "tag": ""
+  },
+  {
+   "name": "imu_busy",
+   "width": 1,
+   "driver": "i2c_sensor_subsystem.imu_busy_o",
+   "loads": [
+    "timer_unit.sched_busy_i"
+   ],
+   "kind": "level",
+   "fmt": "level",
+   "note": "overrun detection",
+   "tag": ""
+  },
+  {
+   "name": "imu_err",
+   "width": 1,
+   "driver": "i2c_sensor_subsystem.imu_err_o",
+   "loads": [
+    "safety_fault_monitor.imu_err_i"
+   ],
+   "kind": "pulse",
+   "fmt": "pulse",
+   "note": "failed transaction",
+   "tag": ""
+  },
+  {
+   "name": "imu_init_done",
+   "width": 1,
+   "driver": "i2c_sensor_subsystem.imu_init_done_o",
+   "loads": [
+    "sensor_pipeline.imu_init_done_i",
+    "safety_fault_monitor.imu_init_done_i"
+   ],
+   "kind": "level",
+   "fmt": "level",
+   "note": "MPU-6050 configured",
+   "tag": ""
+  },
+  {
+   "name": "setpoint",
+   "width": 32,
+   "driver": "hw_pid_accel.setpoint_o",
+   "loads": [
+    "sensor_pipeline.setpoint_i"
+   ],
+   "kind": "data",
+   "fmt": "Q16.16 rad",
+   "note": "from the PID SETPOINT register",
+   "tag": ""
+  },
+  {
+   "name": "pipe_valid",
+   "width": 1,
+   "driver": "sensor_pipeline.pipe_valid_o",
+   "loads": [
+    "hw_pid_accel.err_valid_i",
+    "safety_fault_monitor.pipe_valid_i"
+   ],
+   "kind": "pulse",
+   "fmt": "pulse",
+   "note": "angle, err, rate valid together",
+   "tag": ""
+  },
+  {
+   "name": "angle",
+   "width": 32,
+   "driver": "sensor_pipeline.angle_o",
+   "loads": [
+    "safety_fault_monitor.angle_i"
+   ],
+   "kind": "data",
+   "fmt": "Q16.16 rad",
+   "note": "filtered, trimmed",
+   "tag": ""
+  },
+  {
+   "name": "err",
+   "width": 32,
+   "driver": "sensor_pipeline.err_o",
+   "loads": [
+    "hw_pid_accel.err_i"
+   ],
+   "kind": "data",
+   "fmt": "Q16.16",
+   "note": "setpoint - angle",
+   "tag": ""
+  },
+  {
+   "name": "rate",
+   "width": 32,
+   "driver": "sensor_pipeline.rate_o",
+   "loads": [
+    "hw_pid_accel.rate_i"
+   ],
+   "kind": "data",
+   "fmt": "Q16.16 rad/s",
+   "note": "filtered, bias-corrected",
+   "tag": ""
+  },
+  {
+   "name": "calib_done",
+   "width": 1,
+   "driver": "sensor_pipeline.calib_done_o",
+   "loads": [
+    "safety_fault_monitor.calib_done_i"
+   ],
+   "kind": "level",
+   "fmt": "level",
+   "note": "arming precondition",
+   "tag": ""
+  },
+  {
+   "name": "pwm_cmd_valid",
+   "width": 1,
+   "driver": "hw_pid_accel.pwm_cmd_valid_o",
+   "loads": [
+    "actuation_subsystem.cmd_valid_i"
+   ],
+   "kind": "pulse",
+   "fmt": "pulse",
+   "note": "new motor command",
+   "tag": ""
+  },
+  {
+   "name": "pwm_cmd",
+   "width": 32,
+   "driver": "hw_pid_accel.pwm_cmd_o",
+   "loads": [
+    "actuation_subsystem.cmd_i"
+   ],
+   "kind": "data",
+   "fmt": "Q16.16 [-1,+1]",
+   "note": "balance command",
+   "tag": ""
+  },
+  {
+   "name": "pid_sat",
+   "width": 1,
+   "driver": "hw_pid_accel.pid_sat_o",
+   "loads": [
+    "safety_fault_monitor.pid_sat_i"
+   ],
+   "kind": "level",
+   "fmt": "level",
+   "note": "saturation monitor",
+   "tag": ""
+  },
+  {
+   "name": "pwm_enable",
+   "width": 1,
+   "driver": "safety_fault_monitor.pwm_enable_o",
+   "loads": [
+    "hw_pid_accel.run_i",
+    "actuation_subsystem.pwm_enable_i"
+   ],
+   "kind": "level",
+   "fmt": "level",
+   "note": "motors allowed (the only authority over the motors)",
+   "tag": ""
+  },
+  {
+   "name": "irq_timer",
+   "width": 1,
+   "driver": "timer_unit.irq_timer_o",
+   "loads": [
+    "cpu_subsystem.irq_timer_i"
+   ],
+   "kind": "level",
+   "fmt": "level",
+   "note": "housekeeping interrupt, W1C in TMR",
+   "tag": ""
+  },
+  {
+   "name": "irq_fault",
+   "width": 1,
+   "driver": "safety_fault_monitor.irq_fault_o",
+   "loads": [
+    "cpu_subsystem.irq_fault_i"
+   ],
+   "kind": "level",
+   "fmt": "level",
+   "note": "fault interrupt, cleared through SAFE regs",
+   "tag": ""
+  },
+  {
+   "name": "estop_n_i",
+   "width": 1,
+   "driver": "TOP.estop_n_i",
+   "loads": [
+    "safety_fault_monitor.estop_n_i"
+   ],
+   "kind": "level",
+   "fmt": "level",
+   "note": "raw pin; synchronised inside safety (ACR-1)",
+   "tag": ""
+  },
+  {
+   "name": "arm_sw_i",
+   "width": 1,
+   "driver": "TOP.arm_sw_i",
+   "loads": [
+    "safety_fault_monitor.arm_sw_i"
+   ],
+   "kind": "level",
+   "fmt": "level",
+   "note": "raw pin; synchronised inside safety (ACR-1)",
+   "tag": "bringup"
+  },
+  {
+   "name": "bench_en_i",
+   "width": 1,
+   "driver": "TOP.bench_en_i",
+   "loads": [
+    "actuation_subsystem.bench_en_i"
+   ],
+   "kind": "level",
+   "fmt": "level",
+   "note": "raw pin; synchronised inside actuation (ACR-1)",
+   "tag": "bringup"
+  },
+  {
+   "name": "bench_sel_i",
+   "width": 2,
+   "driver": "TOP.bench_sel_i",
+   "loads": [
+    "actuation_subsystem.bench_sel_i"
+   ],
+   "kind": "data",
+   "fmt": "code",
+   "note": "raw pins; synchronised inside actuation (ACR-1)",
+   "tag": "bringup"
+  },
+  {
+   "name": "scl_i",
+   "width": 1,
+   "driver": "TOP.scl_i",
+   "loads": [
+    "i2c_sensor_subsystem.scl_i"
+   ],
+   "kind": "level",
+   "fmt": "level",
+   "note": "raw; 2-FF inside i2c",
+   "tag": ""
+  },
+  {
+   "name": "sda_i",
+   "width": 1,
+   "driver": "TOP.sda_i",
+   "loads": [
+    "i2c_sensor_subsystem.sda_i"
+   ],
+   "kind": "level",
+   "fmt": "level",
+   "note": "raw; 2-FF inside i2c",
+   "tag": ""
+  },
+  {
+   "name": "scl_drive_low_o",
+   "width": 1,
+   "driver": "i2c_sensor_subsystem.scl_drive_low_o",
+   "loads": [
+    "TOP.scl_drive_low_o"
+   ],
+   "kind": "level",
+   "fmt": "level",
+   "note": "open-drain drive",
+   "tag": ""
+  },
+  {
+   "name": "sda_drive_low_o",
+   "width": 1,
+   "driver": "i2c_sensor_subsystem.sda_drive_low_o",
+   "loads": [
+    "TOP.sda_drive_low_o"
+   ],
+   "kind": "level",
+   "fmt": "level",
+   "note": "open-drain drive",
+   "tag": ""
+  },
+  {
+   "name": "l_rpwm_o",
+   "width": 1,
+   "driver": "actuation_subsystem.l_rpwm_o",
+   "loads": [
+    "TOP.l_rpwm_o"
+   ],
+   "kind": "level",
+   "fmt": "level",
+   "note": "motor driver pin",
+   "tag": ""
+  },
+  {
+   "name": "l_lpwm_o",
+   "width": 1,
+   "driver": "actuation_subsystem.l_lpwm_o",
+   "loads": [
+    "TOP.l_lpwm_o"
+   ],
+   "kind": "level",
+   "fmt": "level",
+   "note": "motor driver pin",
+   "tag": ""
+  },
+  {
+   "name": "l_r_en_o",
+   "width": 1,
+   "driver": "actuation_subsystem.l_r_en_o",
+   "loads": [
+    "TOP.l_r_en_o"
+   ],
+   "kind": "level",
+   "fmt": "level",
+   "note": "motor driver pin",
+   "tag": ""
+  },
+  {
+   "name": "l_l_en_o",
+   "width": 1,
+   "driver": "actuation_subsystem.l_l_en_o",
+   "loads": [
+    "TOP.l_l_en_o"
+   ],
+   "kind": "level",
+   "fmt": "level",
+   "note": "motor driver pin",
+   "tag": ""
+  },
+  {
+   "name": "r_rpwm_o",
+   "width": 1,
+   "driver": "actuation_subsystem.r_rpwm_o",
+   "loads": [
+    "TOP.r_rpwm_o"
+   ],
+   "kind": "level",
+   "fmt": "level",
+   "note": "motor driver pin",
+   "tag": ""
+  },
+  {
+   "name": "r_lpwm_o",
+   "width": 1,
+   "driver": "actuation_subsystem.r_lpwm_o",
+   "loads": [
+    "TOP.r_lpwm_o"
+   ],
+   "kind": "level",
+   "fmt": "level",
+   "note": "motor driver pin",
+   "tag": ""
+  },
+  {
+   "name": "r_r_en_o",
+   "width": 1,
+   "driver": "actuation_subsystem.r_r_en_o",
+   "loads": [
+    "TOP.r_r_en_o"
+   ],
+   "kind": "level",
+   "fmt": "level",
+   "note": "motor driver pin",
+   "tag": ""
+  },
+  {
+   "name": "r_l_en_o",
+   "width": 1,
+   "driver": "actuation_subsystem.r_l_en_o",
+   "loads": [
+    "TOP.r_l_en_o"
+   ],
+   "kind": "level",
+   "fmt": "level",
+   "note": "motor driver pin",
+   "tag": ""
+  },
+  {
+   "name": "dbg_o",
+   "width": 8,
+   "driver": "safety_fault_monitor.dbg_o",
+   "loads": [
+    "TOP.dbg_o"
+   ],
+   "kind": "data",
+   "fmt": "LED bits",
+   "note": "LEDs / debug pins",
+   "tag": "dbg"
+  },
+  {
+   "name": "duty_l",
+   "width": 16,
+   "driver": "actuation_subsystem.duty_l_o",
+   "loads": [],
+   "kind": "data",
+   "fmt": "counts",
+   "note": "debug tap: ILA probe",
+   "tag": "dbg"
+  },
+  {
+   "name": "duty_r",
+   "width": 16,
+   "driver": "actuation_subsystem.duty_r_o",
+   "loads": [],
+   "kind": "data",
+   "fmt": "counts",
+   "note": "debug tap: ILA probe",
+   "tag": "dbg"
+  },
+  {
+   "name": "cpu_core_sleep",
+   "width": 1,
+   "driver": "cpu_subsystem.core_sleep_o",
+   "loads": [],
+   "kind": "level",
+   "fmt": "level",
+   "note": "debug tap: ILA probe",
+   "tag": "dbg"
+  },
+  {
+   "name": "cpu_double_fault",
+   "width": 1,
+   "driver": "cpu_subsystem.double_fault_seen_o",
+   "loads": [],
+   "kind": "level",
+   "fmt": "level",
+   "note": "debug tap: ILA probe",
+   "tag": "dbg"
+  },
+  {
+   "name": "instr_req",
+   "width": 1,
+   "driver": "cpu_subsystem.instr_req_o",
+   "loads": [
+    "bus_interconnect.instr_req_i"
+   ],
+   "kind": "bus",
+   "fmt": "level",
+   "note": "Ibex instruction port",
+   "tag": ""
+  },
+  {
+   "name": "instr_addr",
+   "width": 32,
+   "driver": "cpu_subsystem.instr_addr_o",
+   "loads": [
+    "bus_interconnect.instr_addr_i"
+   ],
+   "kind": "bus",
+   "fmt": "byte addr",
+   "note": "Ibex instruction port",
+   "tag": ""
+  },
+  {
+   "name": "instr_gnt",
+   "width": 1,
+   "driver": "bus_interconnect.instr_gnt_o",
+   "loads": [
+    "cpu_subsystem.instr_gnt_i"
+   ],
+   "kind": "bus",
+   "fmt": "level",
+   "note": "grant = request, same cycle",
+   "tag": ""
+  },
+  {
+   "name": "instr_rvalid",
+   "width": 1,
+   "driver": "bus_interconnect.instr_rvalid_o",
+   "loads": [
+    "cpu_subsystem.instr_rvalid_i"
+   ],
+   "kind": "bus",
+   "fmt": "pulse",
+   "note": "response, next cycle",
+   "tag": ""
+  },
+  {
+   "name": "instr_rdata",
+   "width": 32,
+   "driver": "bus_interconnect.instr_rdata_o",
+   "loads": [
+    "cpu_subsystem.instr_rdata_i"
+   ],
+   "kind": "bus",
+   "fmt": "word",
+   "note": "instruction word",
+   "tag": ""
+  },
+  {
+   "name": "instr_err",
+   "width": 1,
+   "driver": "bus_interconnect.instr_err_o",
+   "loads": [
+    "cpu_subsystem.instr_err_i"
+   ],
+   "kind": "bus",
+   "fmt": "level",
+   "note": "fetch error",
+   "tag": ""
+  },
+  {
+   "name": "data_req",
+   "width": 1,
+   "driver": "cpu_subsystem.data_req_o",
+   "loads": [
+    "bus_interconnect.data_req_i"
+   ],
+   "kind": "bus",
+   "fmt": "level",
+   "note": "Ibex data port",
+   "tag": ""
+  },
+  {
+   "name": "data_we",
+   "width": 1,
+   "driver": "cpu_subsystem.data_we_o",
+   "loads": [
+    "bus_interconnect.data_we_i"
+   ],
+   "kind": "bus",
+   "fmt": "level",
+   "note": "store",
+   "tag": ""
+  },
+  {
+   "name": "data_be",
+   "width": 4,
+   "driver": "cpu_subsystem.data_be_o",
+   "loads": [
+    "bus_interconnect.data_be_i"
+   ],
+   "kind": "bus",
+   "fmt": "mask",
+   "note": "byte enables",
+   "tag": ""
+  },
+  {
+   "name": "data_addr",
+   "width": 32,
+   "driver": "cpu_subsystem.data_addr_o",
+   "loads": [
+    "bus_interconnect.data_addr_i"
+   ],
+   "kind": "bus",
+   "fmt": "byte addr",
+   "note": "address",
+   "tag": ""
+  },
+  {
+   "name": "data_wdata",
+   "width": 32,
+   "driver": "cpu_subsystem.data_wdata_o",
+   "loads": [
+    "bus_interconnect.data_wdata_i"
+   ],
+   "kind": "bus",
+   "fmt": "word",
+   "note": "write data",
+   "tag": ""
+  },
+  {
+   "name": "data_gnt",
+   "width": 1,
+   "driver": "bus_interconnect.data_gnt_o",
+   "loads": [
+    "cpu_subsystem.data_gnt_i"
+   ],
+   "kind": "bus",
+   "fmt": "level",
+   "note": "grant",
+   "tag": ""
+  },
+  {
+   "name": "data_rvalid",
+   "width": 1,
+   "driver": "bus_interconnect.data_rvalid_o",
+   "loads": [
+    "cpu_subsystem.data_rvalid_i"
+   ],
+   "kind": "bus",
+   "fmt": "pulse",
+   "note": "response",
+   "tag": ""
+  },
+  {
+   "name": "data_rdata",
+   "width": 32,
+   "driver": "bus_interconnect.data_rdata_o",
+   "loads": [
+    "cpu_subsystem.data_rdata_i"
+   ],
+   "kind": "bus",
+   "fmt": "word",
+   "note": "read data",
+   "tag": ""
+  },
+  {
+   "name": "data_err",
+   "width": 1,
+   "driver": "bus_interconnect.data_err_o",
+   "loads": [
+    "cpu_subsystem.data_err_i"
+   ],
+   "kind": "bus",
+   "fmt": "level",
+   "note": "bus error",
+   "tag": ""
+  },
+  {
+   "name": "rom_ia_req",
+   "width": 1,
+   "driver": "bus_interconnect.rom_ia_req_o",
+   "loads": [
+    "rom_dp.ia_req_i"
+   ],
+   "kind": "bus",
+   "fmt": "pulse",
+   "note": "",
+   "tag": ""
+  },
+  {
+   "name": "rom_ia_addr",
+   "width": 13,
+   "driver": "bus_interconnect.rom_ia_addr_o",
+   "loads": [
+    "rom_dp.ia_addr_i"
+   ],
+   "kind": "bus",
+   "fmt": "byte addr",
+   "note": "",
+   "tag": ""
+  },
+  {
+   "name": "rom_ia_rdata",
+   "width": 32,
+   "driver": "rom_dp.ia_rdata_o",
+   "loads": [
+    "bus_interconnect.rom_ia_rdata_i"
+   ],
+   "kind": "bus",
+   "fmt": "word",
+   "note": "",
+   "tag": ""
+  },
+  {
+   "name": "rom_sel",
+   "width": 1,
+   "driver": "bus_interconnect.rom_sel_o",
+   "loads": [
+    "rom_dp.s_sel_i"
+   ],
+   "kind": "bus",
+   "fmt": "pulse",
+   "note": "",
+   "tag": ""
+  },
+  {
+   "name": "rom_addr",
+   "width": 13,
+   "driver": "bus_interconnect.rom_addr_o",
+   "loads": [
+    "rom_dp.s_addr_i"
+   ],
+   "kind": "bus",
+   "fmt": "byte addr",
+   "note": "",
+   "tag": ""
+  },
+  {
+   "name": "rom_rdata",
+   "width": 32,
+   "driver": "rom_dp.s_rdata_o",
+   "loads": [
+    "bus_interconnect.rom_rdata_i"
+   ],
+   "kind": "bus",
+   "fmt": "word",
+   "note": "",
+   "tag": ""
+  },
+  {
+   "name": "ram_sel",
+   "width": 1,
+   "driver": "bus_interconnect.ram_sel_o",
+   "loads": [
+    "ram_sp.s_sel_i"
+   ],
+   "kind": "bus",
+   "fmt": "pulse",
+   "note": "",
+   "tag": ""
+  },
+  {
+   "name": "ram_we",
+   "width": 1,
+   "driver": "bus_interconnect.ram_we_o",
+   "loads": [
+    "ram_sp.s_we_i"
+   ],
+   "kind": "bus",
+   "fmt": "level",
+   "note": "",
+   "tag": ""
+  },
+  {
+   "name": "ram_be",
+   "width": 4,
+   "driver": "bus_interconnect.ram_be_o",
+   "loads": [
+    "ram_sp.s_be_i"
+   ],
+   "kind": "bus",
+   "fmt": "mask",
+   "note": "",
+   "tag": ""
+  },
+  {
+   "name": "ram_addr",
+   "width": 12,
+   "driver": "bus_interconnect.ram_addr_o",
+   "loads": [
+    "ram_sp.s_addr_i"
+   ],
+   "kind": "bus",
+   "fmt": "byte offset",
+   "note": "",
+   "tag": ""
+  },
+  {
+   "name": "ram_wdata",
+   "width": 32,
+   "driver": "bus_interconnect.ram_wdata_o",
+   "loads": [
+    "ram_sp.s_wdata_i"
+   ],
+   "kind": "bus",
+   "fmt": "word",
+   "note": "",
+   "tag": ""
+  },
+  {
+   "name": "ram_rdata",
+   "width": 32,
+   "driver": "ram_sp.s_rdata_o",
+   "loads": [
+    "bus_interconnect.ram_rdata_i"
+   ],
+   "kind": "bus",
+   "fmt": "word",
+   "note": "",
+   "tag": ""
+  },
+  {
+   "name": "tmr_sel",
+   "width": 1,
+   "driver": "bus_interconnect.tmr_sel_o",
+   "loads": [
+    "timer_unit.s_sel_i"
+   ],
+   "kind": "bus",
+   "fmt": "pulse",
+   "note": "TMR bank slave bus",
+   "tag": ""
+  },
+  {
+   "name": "tmr_we",
+   "width": 1,
+   "driver": "bus_interconnect.tmr_we_o",
+   "loads": [
+    "timer_unit.s_we_i"
+   ],
+   "kind": "bus",
+   "fmt": "level",
+   "note": "TMR bank slave bus",
+   "tag": ""
+  },
+  {
+   "name": "tmr_be",
+   "width": 4,
+   "driver": "bus_interconnect.tmr_be_o",
+   "loads": [
+    "timer_unit.s_be_i"
+   ],
+   "kind": "bus",
+   "fmt": "mask",
+   "note": "TMR bank slave bus",
+   "tag": ""
+  },
+  {
+   "name": "tmr_addr",
+   "width": 12,
+   "driver": "bus_interconnect.tmr_addr_o",
+   "loads": [
+    "timer_unit.s_addr_i"
+   ],
+   "kind": "bus",
+   "fmt": "byte offset",
+   "note": "TMR bank slave bus",
+   "tag": ""
+  },
+  {
+   "name": "tmr_wdata",
+   "width": 32,
+   "driver": "bus_interconnect.tmr_wdata_o",
+   "loads": [
+    "timer_unit.s_wdata_i"
+   ],
+   "kind": "bus",
+   "fmt": "word",
+   "note": "TMR bank slave bus",
+   "tag": ""
+  },
+  {
+   "name": "tmr_rdata",
+   "width": 32,
+   "driver": "timer_unit.s_rdata_o",
+   "loads": [
+    "bus_interconnect.tmr_rdata_i"
+   ],
+   "kind": "bus",
+   "fmt": "word",
+   "note": "TMR bank read data",
+   "tag": ""
+  },
+  {
+   "name": "i2c_sel",
+   "width": 1,
+   "driver": "bus_interconnect.i2c_sel_o",
+   "loads": [
+    "i2c_sensor_subsystem.s_sel_i"
+   ],
+   "kind": "bus",
+   "fmt": "pulse",
+   "note": "I2C bank slave bus",
+   "tag": ""
+  },
+  {
+   "name": "i2c_we",
+   "width": 1,
+   "driver": "bus_interconnect.i2c_we_o",
+   "loads": [
+    "i2c_sensor_subsystem.s_we_i"
+   ],
+   "kind": "bus",
+   "fmt": "level",
+   "note": "I2C bank slave bus",
+   "tag": ""
+  },
+  {
+   "name": "i2c_be",
+   "width": 4,
+   "driver": "bus_interconnect.i2c_be_o",
+   "loads": [
+    "i2c_sensor_subsystem.s_be_i"
+   ],
+   "kind": "bus",
+   "fmt": "mask",
+   "note": "I2C bank slave bus",
+   "tag": ""
+  },
+  {
+   "name": "i2c_addr",
+   "width": 12,
+   "driver": "bus_interconnect.i2c_addr_o",
+   "loads": [
+    "i2c_sensor_subsystem.s_addr_i"
+   ],
+   "kind": "bus",
+   "fmt": "byte offset",
+   "note": "I2C bank slave bus",
+   "tag": ""
+  },
+  {
+   "name": "i2c_wdata",
+   "width": 32,
+   "driver": "bus_interconnect.i2c_wdata_o",
+   "loads": [
+    "i2c_sensor_subsystem.s_wdata_i"
+   ],
+   "kind": "bus",
+   "fmt": "word",
+   "note": "I2C bank slave bus",
+   "tag": ""
+  },
+  {
+   "name": "i2c_rdata",
+   "width": 32,
+   "driver": "i2c_sensor_subsystem.s_rdata_o",
+   "loads": [
+    "bus_interconnect.i2c_rdata_i"
+   ],
+   "kind": "bus",
+   "fmt": "word",
+   "note": "I2C bank read data",
+   "tag": ""
+  },
+  {
+   "name": "sens_sel",
+   "width": 1,
+   "driver": "bus_interconnect.sens_sel_o",
+   "loads": [
+    "sensor_pipeline.s_sel_i"
+   ],
+   "kind": "bus",
+   "fmt": "pulse",
+   "note": "SENS bank slave bus",
+   "tag": ""
+  },
+  {
+   "name": "sens_we",
+   "width": 1,
+   "driver": "bus_interconnect.sens_we_o",
+   "loads": [
+    "sensor_pipeline.s_we_i"
+   ],
+   "kind": "bus",
+   "fmt": "level",
+   "note": "SENS bank slave bus",
+   "tag": ""
+  },
+  {
+   "name": "sens_be",
+   "width": 4,
+   "driver": "bus_interconnect.sens_be_o",
+   "loads": [
+    "sensor_pipeline.s_be_i"
+   ],
+   "kind": "bus",
+   "fmt": "mask",
+   "note": "SENS bank slave bus",
+   "tag": ""
+  },
+  {
+   "name": "sens_addr",
+   "width": 12,
+   "driver": "bus_interconnect.sens_addr_o",
+   "loads": [
+    "sensor_pipeline.s_addr_i"
+   ],
+   "kind": "bus",
+   "fmt": "byte offset",
+   "note": "SENS bank slave bus",
+   "tag": ""
+  },
+  {
+   "name": "sens_wdata",
+   "width": 32,
+   "driver": "bus_interconnect.sens_wdata_o",
+   "loads": [
+    "sensor_pipeline.s_wdata_i"
+   ],
+   "kind": "bus",
+   "fmt": "word",
+   "note": "SENS bank slave bus",
+   "tag": ""
+  },
+  {
+   "name": "sens_rdata",
+   "width": 32,
+   "driver": "sensor_pipeline.s_rdata_o",
+   "loads": [
+    "bus_interconnect.sens_rdata_i"
+   ],
+   "kind": "bus",
+   "fmt": "word",
+   "note": "SENS bank read data",
+   "tag": ""
+  },
+  {
+   "name": "pid_sel",
+   "width": 1,
+   "driver": "bus_interconnect.pid_sel_o",
+   "loads": [
+    "hw_pid_accel.s_sel_i"
+   ],
+   "kind": "bus",
+   "fmt": "pulse",
+   "note": "PID bank slave bus",
+   "tag": ""
+  },
+  {
+   "name": "pid_we",
+   "width": 1,
+   "driver": "bus_interconnect.pid_we_o",
+   "loads": [
+    "hw_pid_accel.s_we_i"
+   ],
+   "kind": "bus",
+   "fmt": "level",
+   "note": "PID bank slave bus",
+   "tag": ""
+  },
+  {
+   "name": "pid_be",
+   "width": 4,
+   "driver": "bus_interconnect.pid_be_o",
+   "loads": [
+    "hw_pid_accel.s_be_i"
+   ],
+   "kind": "bus",
+   "fmt": "mask",
+   "note": "PID bank slave bus",
+   "tag": ""
+  },
+  {
+   "name": "pid_addr",
+   "width": 12,
+   "driver": "bus_interconnect.pid_addr_o",
+   "loads": [
+    "hw_pid_accel.s_addr_i"
+   ],
+   "kind": "bus",
+   "fmt": "byte offset",
+   "note": "PID bank slave bus",
+   "tag": ""
+  },
+  {
+   "name": "pid_wdata",
+   "width": 32,
+   "driver": "bus_interconnect.pid_wdata_o",
+   "loads": [
+    "hw_pid_accel.s_wdata_i"
+   ],
+   "kind": "bus",
+   "fmt": "word",
+   "note": "PID bank slave bus",
+   "tag": ""
+  },
+  {
+   "name": "pid_rdata",
+   "width": 32,
+   "driver": "hw_pid_accel.s_rdata_o",
+   "loads": [
+    "bus_interconnect.pid_rdata_i"
+   ],
+   "kind": "bus",
+   "fmt": "word",
+   "note": "PID bank read data",
+   "tag": ""
+  },
+  {
+   "name": "pwm_sel",
+   "width": 1,
+   "driver": "bus_interconnect.pwm_sel_o",
+   "loads": [
+    "actuation_subsystem.s_sel_i"
+   ],
+   "kind": "bus",
+   "fmt": "pulse",
+   "note": "PWM bank slave bus",
+   "tag": ""
+  },
+  {
+   "name": "pwm_we",
+   "width": 1,
+   "driver": "bus_interconnect.pwm_we_o",
+   "loads": [
+    "actuation_subsystem.s_we_i"
+   ],
+   "kind": "bus",
+   "fmt": "level",
+   "note": "PWM bank slave bus",
+   "tag": ""
+  },
+  {
+   "name": "pwm_be",
+   "width": 4,
+   "driver": "bus_interconnect.pwm_be_o",
+   "loads": [
+    "actuation_subsystem.s_be_i"
+   ],
+   "kind": "bus",
+   "fmt": "mask",
+   "note": "PWM bank slave bus",
+   "tag": ""
+  },
+  {
+   "name": "pwm_addr",
+   "width": 12,
+   "driver": "bus_interconnect.pwm_addr_o",
+   "loads": [
+    "actuation_subsystem.s_addr_i"
+   ],
+   "kind": "bus",
+   "fmt": "byte offset",
+   "note": "PWM bank slave bus",
+   "tag": ""
+  },
+  {
+   "name": "pwm_wdata",
+   "width": 32,
+   "driver": "bus_interconnect.pwm_wdata_o",
+   "loads": [
+    "actuation_subsystem.s_wdata_i"
+   ],
+   "kind": "bus",
+   "fmt": "word",
+   "note": "PWM bank slave bus",
+   "tag": ""
+  },
+  {
+   "name": "pwm_rdata",
+   "width": 32,
+   "driver": "actuation_subsystem.s_rdata_o",
+   "loads": [
+    "bus_interconnect.pwm_rdata_i"
+   ],
+   "kind": "bus",
+   "fmt": "word",
+   "note": "PWM bank read data",
+   "tag": ""
+  },
+  {
+   "name": "saf_sel",
+   "width": 1,
+   "driver": "bus_interconnect.saf_sel_o",
+   "loads": [
+    "safety_fault_monitor.s_sel_i"
+   ],
+   "kind": "bus",
+   "fmt": "pulse",
+   "note": "SAF bank slave bus",
+   "tag": ""
+  },
+  {
+   "name": "saf_we",
+   "width": 1,
+   "driver": "bus_interconnect.saf_we_o",
+   "loads": [
+    "safety_fault_monitor.s_we_i"
+   ],
+   "kind": "bus",
+   "fmt": "level",
+   "note": "SAF bank slave bus",
+   "tag": ""
+  },
+  {
+   "name": "saf_be",
+   "width": 4,
+   "driver": "bus_interconnect.saf_be_o",
+   "loads": [
+    "safety_fault_monitor.s_be_i"
+   ],
+   "kind": "bus",
+   "fmt": "mask",
+   "note": "SAF bank slave bus",
+   "tag": ""
+  },
+  {
+   "name": "saf_addr",
+   "width": 12,
+   "driver": "bus_interconnect.saf_addr_o",
+   "loads": [
+    "safety_fault_monitor.s_addr_i"
+   ],
+   "kind": "bus",
+   "fmt": "byte offset",
+   "note": "SAF bank slave bus",
+   "tag": ""
+  },
+  {
+   "name": "saf_wdata",
+   "width": 32,
+   "driver": "bus_interconnect.saf_wdata_o",
+   "loads": [
+    "safety_fault_monitor.s_wdata_i"
+   ],
+   "kind": "bus",
+   "fmt": "word",
+   "note": "SAF bank slave bus",
+   "tag": ""
+  },
+  {
+   "name": "saf_rdata",
+   "width": 32,
+   "driver": "safety_fault_monitor.s_rdata_o",
+   "loads": [
+    "bus_interconnect.saf_rdata_i"
+   ],
+   "kind": "bus",
+   "fmt": "word",
+   "note": "SAF bank read data",
+   "tag": ""
+  }
+ ],
+ "top_pins": [
+  [
+   "clk_in",
+   "in",
+   1,
+   "core",
+   "50 MHz clock (from the FPGA clock generator or the ASIC clock pad)"
+  ],
+  [
+   "rst_n_in",
+   "in",
+   1,
+   "core",
+   "external reset, active-low, async"
+  ],
+  [
+   "pll_locked_i",
+   "in",
+   1,
+   "fpga",
+   "clock-generator lock; tie 1 if none"
+  ],
+  [
+   "estop_n_i",
+   "in",
+   1,
+   "core",
+   "hardware E-stop, active-low"
+  ],
+  [
+   "arm_sw_i",
+   "in",
+   1,
+   "bringup",
+   "arm switch (phase 1 only; tie 0 in the final SoC)"
+  ],
+  [
+   "bench_en_i",
+   "in",
+   1,
+   "bringup",
+   "open-loop motor bench mode"
+  ],
+  [
+   "bench_sel_i",
+   "in",
+   2,
+   "bringup",
+   "bench command select"
+  ],
+  [
+   "scl_i",
+   "in",
+   1,
+   "core",
+   "I2C SCL input"
+  ],
+  [
+   "sda_i",
+   "in",
+   1,
+   "core",
+   "I2C SDA input"
+  ],
+  [
+   "scl_drive_low_o",
+   "out",
+   1,
+   "core",
+   "1 = pull SCL low"
+  ],
+  [
+   "sda_drive_low_o",
+   "out",
+   1,
+   "core",
+   "1 = pull SDA low"
+  ],
+  [
+   "l_rpwm_o",
+   "out",
+   1,
+   "core",
+   "left BTS7960 RPWM"
+  ],
+  [
+   "l_lpwm_o",
+   "out",
+   1,
+   "core",
+   "left BTS7960 LPWM"
+  ],
+  [
+   "l_r_en_o",
+   "out",
+   1,
+   "core",
+   "left R_EN"
+  ],
+  [
+   "l_l_en_o",
+   "out",
+   1,
+   "core",
+   "left L_EN"
+  ],
+  [
+   "r_rpwm_o",
+   "out",
+   1,
+   "core",
+   "right BTS7960 RPWM"
+  ],
+  [
+   "r_lpwm_o",
+   "out",
+   1,
+   "core",
+   "right BTS7960 LPWM"
+  ],
+  [
+   "r_r_en_o",
+   "out",
+   1,
+   "core",
+   "right R_EN"
+  ],
+  [
+   "r_l_en_o",
+   "out",
+   1,
+   "core",
+   "right L_EN"
+  ],
+  [
+   "dbg_o",
+   "out",
+   8,
+   "dbg",
+   "LEDs / debug pins"
+  ]
+ ],
+ "regs": {
+  "TMR": {
+   "base": 268435456,
+   "id": 1414089985,
+   "block": "timer_unit",
+   "regs": [
+    {
+     "off": 0,
+     "name": "ID",
+     "acc": "RO",
+     "reset": "0x54494D01",
+     "desc": "\"TIM\" + version 01"
+    },
+    {
+     "off": 4,
+     "name": "CTRL",
+     "acc": "RW",
+     "reset": "b0=DEF_EN",
+     "desc": "b0 EN (ticks run); b1 IRQ_EN; b2 CNT_CLR (SC) restart counters"
+    },
+    {
+     "off": 8,
+     "name": "TICK_PERIOD",
+     "acc": "RW",
+     "reset": "97656",
+     "desc": "clk cycles per tick (min 1000); new value applies at next reload"
+    },
+    {
+     "off": 12,
+     "name": "IRQ_DIV",
+     "acc": "RW",
+     "reset": "51",
+     "desc": "ticks per timer interrupt (about 10 Hz)"
+    },
+    {
+     "off": 16,
+     "name": "STATUS",
+     "acc": "RO/W1C",
+     "reset": "0",
+     "desc": "b0 IRQ_PENDING (W1C); b1 OVERRUN (W1C)"
+    },
+    {
+     "off": 20,
+     "name": "TICK_COUNT",
+     "acc": "RO",
+     "reset": "0",
+     "desc": "ticks since enable"
+    },
+    {
+     "off": 24,
+     "name": "FREE_CNT",
+     "acc": "RO",
+     "reset": "0",
+     "desc": "free-running clk counter (timestamp)"
+    }
+   ]
+  },
+  "I2C": {
+   "base": 268439552,
+   "id": 1228030721,
+   "block": "i2c_sensor_subsystem",
+   "regs": [
+    {
+     "off": 0,
+     "name": "ID",
+     "acc": "RO",
+     "reset": "0x49324301",
+     "desc": "\"I2C\" + version 01"
+    },
+    {
+     "off": 4,
+     "name": "CTRL",
+     "acc": "RW",
+     "reset": "b0=DEF_EN",
+     "desc": "b0 EN; b1 REINIT (SC); b2 SOFT_TRIG (SC)"
+    },
+    {
+     "off": 8,
+     "name": "CLK_DIV",
+     "acc": "RW",
+     "reset": "31",
+     "desc": "f_scl = f_clk / (4*(CLK_DIV+1)) = 390.6 kHz"
+    },
+    {
+     "off": 12,
+     "name": "STATUS",
+     "acc": "RO/W1C",
+     "reset": "0",
+     "desc": "b0 INIT_DONE; b1 BUSY; b2 ERR_STICKY (W1C); b3 TIMEOUT_STICKY (W1C)"
+    },
+    {
+     "off": 16,
+     "name": "ERR_COUNT",
+     "acc": "RO",
+     "reset": "0",
+     "desc": "saturating count of failed transactions"
+    },
+    {
+     "off": 20,
+     "name": "SAMPLE_COUNT",
+     "acc": "RO",
+     "reset": "0",
+     "desc": "good samples since reset"
+    },
+    {
+     "off": 24,
+     "name": "DEV_ADDR",
+     "acc": "RW",
+     "reset": "0x68",
+     "desc": "7-bit device address"
+    },
+    {
+     "off": 32,
+     "name": "AX",
+     "acc": "RO",
+     "reset": "0",
+     "desc": "raw, sign-extended"
+    },
+    {
+     "off": 36,
+     "name": "AY",
+     "acc": "RO",
+     "reset": "0",
+     "desc": "raw"
+    },
+    {
+     "off": 40,
+     "name": "AZ",
+     "acc": "RO",
+     "reset": "0",
+     "desc": "raw"
+    },
+    {
+     "off": 44,
+     "name": "GX",
+     "acc": "RO",
+     "reset": "0",
+     "desc": "raw"
+    },
+    {
+     "off": 48,
+     "name": "GY",
+     "acc": "RO",
+     "reset": "0",
+     "desc": "raw"
+    },
+    {
+     "off": 52,
+     "name": "GZ",
+     "acc": "RO",
+     "reset": "0",
+     "desc": "raw"
+    }
+   ]
+  },
+  "SENS": {
+   "base": 268443648,
+   "id": 1397050881,
+   "block": "sensor_pipeline",
+   "regs": [
+    {
+     "off": 0,
+     "name": "ID",
+     "acc": "RO",
+     "reset": "0x53454E01",
+     "desc": "\"SEN\" + version 01"
+    },
+    {
+     "off": 4,
+     "name": "CTRL",
+     "acc": "RW",
+     "reset": "0",
+     "desc": "b0 CAL_START (SC); b1 AXIS_SEL; b2 INV_ANGLE; b3 INV_RATE; b4 FILT_MODE (1 = complementary)"
+    },
+    {
+     "off": 8,
+     "name": "FILT_SHIFT",
+     "acc": "RW",
+     "reset": "0x22",
+     "desc": "[2:0] angle log2 N (0-4); [6:4] rate log2 N"
+    },
+    {
+     "off": 12,
+     "name": "ANGLE_TRIM",
+     "acc": "RW",
+     "reset": "0",
+     "desc": "Q16.16, subtracted from the filtered angle"
+    },
+    {
+     "off": 16,
+     "name": "STATUS",
+     "acc": "RO",
+     "reset": "0",
+     "desc": "b0 CAL_BUSY; b1 CAL_DONE; b2 DATA_FRESH (a sample arrived within the last 2 ticks)"
+    },
+    {
+     "off": 20,
+     "name": "GYRO_BIAS_X",
+     "acc": "RO",
+     "reset": "0",
+     "desc": "signed"
+    },
+    {
+     "off": 24,
+     "name": "GYRO_BIAS_Y",
+     "acc": "RO",
+     "reset": "0",
+     "desc": "signed"
+    },
+    {
+     "off": 28,
+     "name": "GYRO_BIAS_Z",
+     "acc": "RO",
+     "reset": "0",
+     "desc": "signed"
+    },
+    {
+     "off": 32,
+     "name": "ANGLE_RAW",
+     "acc": "RO",
+     "reset": "0",
+     "desc": "after conversion, before filter"
+    },
+    {
+     "off": 36,
+     "name": "ANGLE_FILT",
+     "acc": "RO",
+     "reset": "0",
+     "desc": "after filter and trim"
+    },
+    {
+     "off": 40,
+     "name": "RATE_FILT",
+     "acc": "RO",
+     "reset": "0",
+     "desc": "filtered rate"
+    },
+    {
+     "off": 44,
+     "name": "ERROR",
+     "acc": "RO",
+     "reset": "0",
+     "desc": "setpoint - angle"
+    },
+    {
+     "off": 48,
+     "name": "SEQ_COUNT",
+     "acc": "RO",
+     "reset": "0",
+     "desc": "samples processed"
+    }
+   ]
+  },
+  "PID": {
+   "base": 268447744,
+   "id": 1346978817,
+   "block": "hw_pid_accel",
+   "regs": [
+    {
+     "off": 0,
+     "name": "ID",
+     "acc": "RO",
+     "reset": "0x50494401",
+     "desc": "\"PID\" + version 01"
+    },
+    {
+     "off": 4,
+     "name": "CTRL",
+     "acc": "RW",
+     "reset": "b0=DEF_EN, b2=1",
+     "desc": "b0 EN; b1 CLR_INT (SC); b2 D_SRC (1 = D from gyro rate)"
+    },
+    {
+     "off": 8,
+     "name": "KP",
+     "acc": "RW",
+     "reset": "DEF_KP",
+     "desc": "Q16.16"
+    },
+    {
+     "off": 12,
+     "name": "KI",
+     "acc": "RW",
+     "reset": "DEF_KI",
+     "desc": "Q16.16, pre-multiplied by Ts (Ki*Ts)"
+    },
+    {
+     "off": 16,
+     "name": "KD",
+     "acc": "RW",
+     "reset": "DEF_KD",
+     "desc": "Q16.16 (rad/s when D_SRC=1)"
+    },
+    {
+     "off": 20,
+     "name": "SETPOINT",
+     "acc": "RW",
+     "reset": "DEF_SETPOINT",
+     "desc": "Q16.16 rad"
+    },
+    {
+     "off": 24,
+     "name": "INT_LIMIT",
+     "acc": "RW",
+     "reset": "19661",
+     "desc": "max |integrator| (0.3)"
+    },
+    {
+     "off": 28,
+     "name": "OUT_LIMIT",
+     "acc": "RW",
+     "reset": "DEF_OUT_LIMIT (16384)",
+     "desc": "output clamp, max 65536"
+    },
+    {
+     "off": 32,
+     "name": "STATUS",
+     "acc": "RO/W1C",
+     "reset": "0",
+     "desc": "b0 SAT (live); b1 SAT_STICKY (W1C); b2 ACTIVE"
+    },
+    {
+     "off": 36,
+     "name": "P_TERM",
+     "acc": "RO",
+     "reset": "0",
+     "desc": "last P term"
+    },
+    {
+     "off": 40,
+     "name": "I_TERM",
+     "acc": "RO",
+     "reset": "0",
+     "desc": "integrator"
+    },
+    {
+     "off": 44,
+     "name": "D_TERM",
+     "acc": "RO",
+     "reset": "0",
+     "desc": "last D term"
+    },
+    {
+     "off": 48,
+     "name": "U_OUT",
+     "acc": "RO",
+     "reset": "0",
+     "desc": "last output"
+    }
+   ]
+  },
+  "PWM": {
+   "base": 268451840,
+   "id": 1347898625,
+   "block": "actuation_subsystem",
+   "regs": [
+    {
+     "off": 0,
+     "name": "ID",
+     "acc": "RO",
+     "reset": "0x50574D01",
+     "desc": "\"PWM\" + version 01"
+    },
+    {
+     "off": 4,
+     "name": "CTRL",
+     "acc": "RW",
+     "reset": "b0=DEF_EN, b4=1",
+     "desc": "b0 EN; b1 SLEW_EN; b2 DIR_INV_L; b3 DIR_INV_R; b4 CLAMP_EN"
+    },
+    {
+     "off": 8,
+     "name": "PERIOD",
+     "acc": "RW",
+     "reset": "2500",
+     "desc": "PWM period in clk cycles (20 kHz); applies at the period wrap"
+    },
+    {
+     "off": 12,
+     "name": "MAX_DUTY",
+     "acc": "RW",
+     "reset": "0xE666",
+     "desc": "Q0.16 max duty (0.9)"
+    },
+    {
+     "off": 16,
+     "name": "DEADTIME",
+     "acc": "RW",
+     "reset": "250",
+     "desc": "clk cycles, both outputs low on reversal (5 us)"
+    },
+    {
+     "off": 20,
+     "name": "SLEW_STEP",
+     "acc": "RW",
+     "reset": "6554",
+     "desc": "max command change per update, Q16.16 (0.1)"
+    },
+    {
+     "off": 24,
+     "name": "STEER",
+     "acc": "RW",
+     "reset": "0",
+     "desc": "Q16.16: left = cmd + steer, right = cmd - steer"
+    },
+    {
+     "off": 28,
+     "name": "GAIN_L",
+     "acc": "RW",
+     "reset": "65536",
+     "desc": "Q16.16 left gain"
+    },
+    {
+     "off": 32,
+     "name": "GAIN_R",
+     "acc": "RW",
+     "reset": "65536",
+     "desc": "Q16.16 right gain"
+    },
+    {
+     "off": 36,
+     "name": "STATUS",
+     "acc": "RO",
+     "reset": "0",
+     "desc": "b0 ENABLED; b1 CLAMPED (sticky, W1C); b2 IN_DEADTIME_L; b3 IN_DEADTIME_R"
+    },
+    {
+     "off": 40,
+     "name": "DUTY_L",
+     "acc": "RO",
+     "reset": "0",
+     "desc": "current duty counts"
+    },
+    {
+     "off": 44,
+     "name": "DUTY_R",
+     "acc": "RO",
+     "reset": "0",
+     "desc": "current duty counts"
+    }
+   ]
+  },
+  "SAFE": {
+   "base": 268455936,
+   "id": 1396786689,
+   "block": "safety_fault_monitor",
+   "regs": [
+    {
+     "off": 0,
+     "name": "ID",
+     "acc": "RO",
+     "reset": "0x53414601",
+     "desc": "\"SAF\" + version 01"
+    },
+    {
+     "off": 4,
+     "name": "CTRL",
+     "acc": "RW",
+     "reset": "0x04 | DEF_WD_EN<<1 | DEF_EN",
+     "desc": "b0 ARM; b1 WD_EN; b2 TILT_EN (reset 1); b3 FAULT_CLR (SC); b4 IRQ_EN"
+    },
+    {
+     "off": 8,
+     "name": "WD_KICK",
+     "acc": "WO",
+     "reset": "-",
+     "desc": "any write restarts the watchdog"
+    },
+    {
+     "off": 12,
+     "name": "TILT_LIMIT",
+     "acc": "RW",
+     "reset": "39322",
+     "desc": "Q16.16 rad (0.6), compared with |angle|"
+    },
+    {
+     "off": 16,
+     "name": "SENSOR_TIMEOUT",
+     "acc": "RW",
+     "reset": "8",
+     "desc": "control ticks without imu_valid"
+    },
+    {
+     "off": 20,
+     "name": "SAT_LIMIT",
+     "acc": "RW",
+     "reset": "256",
+     "desc": "consecutive saturated samples"
+    },
+    {
+     "off": 24,
+     "name": "WD_TIMEOUT",
+     "acc": "RW",
+     "reset": "100",
+     "desc": "ticks (195 ms) without a kick"
+    },
+    {
+     "off": 28,
+     "name": "FAULT_STATUS",
+     "acc": "RO",
+     "reset": "0",
+     "desc": "sticky: b0 TILT, b1 SENSOR_TIMEOUT, b2 I2C_ERR, b3 PID_SAT, b4 WATCHDOG, b5 ESTOP"
+    },
+    {
+     "off": 32,
+     "name": "FAULT_LIVE",
+     "acc": "RO",
+     "reset": "0",
+     "desc": "same bits, live"
+    },
+    {
+     "off": 36,
+     "name": "STATE",
+     "acc": "RO",
+     "reset": "0",
+     "desc": "0 DISARMED, 1 ARMED, 2 FAULT"
+    },
+    {
+     "off": 40,
+     "name": "DBG_OUT",
+     "acc": "RW",
+     "reset": "0",
+     "desc": "firmware LED bits -> dbg_o[7:4]"
+    }
+   ]
+  }
+ },
+ "memmap": [
+  [
+   "ROM",
+   0,
+   8192,
+   "rom_dp",
+   "8 KB, firmware (read-only)"
+  ],
+  [
+   "TMR",
+   268435456,
+   4096,
+   "timer_unit",
+   "register bank"
+  ],
+  [
+   "I2C",
+   268439552,
+   4096,
+   "i2c_sensor_subsystem",
+   "register bank"
+  ],
+  [
+   "SENS",
+   268443648,
+   4096,
+   "sensor_pipeline",
+   "register bank"
+  ],
+  [
+   "PID",
+   268447744,
+   4096,
+   "hw_pid_accel",
+   "register bank"
+  ],
+  [
+   "PWM",
+   268451840,
+   4096,
+   "actuation_subsystem",
+   "register bank"
+  ],
+  [
+   "SAFE",
+   268455936,
+   4096,
+   "safety_fault_monitor",
+   "register bank"
+  ],
+  [
+   "RAM",
+   536870912,
+   4096,
+   "ram_sp",
+   "4 KB, data + stack"
+  ]
+ ],
+ "acrs": [
+  [
+   "ACR-1",
+   "Input synchronisers live INSIDE ecu_soc_top",
+   "v1.0 had the board wrapper synchronise estop/arm/bench AND safety synchronise estop/arm again (double sync, wrong for the ASIC where there is no wrapper). Now: raw pins enter the SoC; safety_fault_monitor synchronises estop_n_i and arm_sw_i; actuation_subsystem synchronises bench_en_i and bench_sel_i (2-FF each); i2c already synchronises scl_i/sda_i; clk_rst_gen handles rst_n_in and pll_locked_i. ecu_fpga_top does NO synchronisation.",
+   "internal to safety and actuation; no port change; removes logic from the FPGA-only wrapper"
+  ],
+  [
+   "ACR-2",
+   "sensor_pipeline gets control_tick_i (1 bit)",
+   "The SENS STATUS bit DATA_FRESH (\"a sample arrived in the last 2 ticks\") needs a time base, but sensor_pipeline had no tick input. Add control_tick_i from timer_unit.",
+   "one new input port on sensor_pipeline; one more load on net control_tick"
+  ],
+  [
+   "ACR-3",
+   "SAFE.CTRL reset value made unambiguous",
+   "v1.0 said \"reset 0\" and \"TILT_EN reset 1\". Now: reset = 0x04 | (DEF_WD_EN<<1) | DEF_EN, i.e. TILT_EN=1, ARM=DEF_EN.",
+   "documentation only"
+  ],
+  [
+   "ACR-4",
+   "Debug taps declared",
+   "duty_l_o, duty_r_o (actuation), core_sleep_o, double_fault_seen_o (cpu) and dbg_o are debug/bring-up taps: they drive named nets with no functional load. FPGA: ILA probes / LEDs. ASIC: left unconnected (dbg_o may become spare pins).",
+   "no port change; classification only"
+  ],
+  [
+   "ACR-5",
+   "Reset-assertion rule for testbenches and Ibex",
+   "Ibex flops reset on the FALLING EDGE of rst_ni (asynchronous). Every testbench must start rst_n high and pull it low after time 0. Our blocks keep synchronous resets; only clk_rst_gen uses async assert.",
+   "verification rule"
+  ],
+  [
+   "ACR-7",
+   "imu_init_done_o is low during (re-)initialisation",
+   "The sheet did not say what imu_init_done_o does when the sequencer re-runs init after 3 consecutive errors. Now: it goes low when init starts and high when init completes. Arming needs calib_done_i, which is reachable only after init; imu_init_done_i is also shown on dbg_o[2].",
+   "behaviour clarification inside i2c_sensor_subsystem; no port change"
+  ],
+  [
+   "ACR-6",
+   "Ibex port list updated to the pinned commit af456e2",
+   "The v1.0 sheet listed an older Ibex port set. cpu_subsystem (starter kit, lint-clean) now ties every port; its external interface is unchanged.",
+   "internal to cpu_subsystem"
+  ]
+ ],
+ "fpga_only": [
+  [
+   "ecu_fpga_top (entire wrapper)",
+   "FPGA",
+   "board wrapper: pin buffers, clock generator, open-drain pad logic, LED drivers, constraints",
+   "replaced by the pad ring / ecu_asic_top"
+  ],
+  [
+   "fpga_clk_gen (MMCM/PLL)",
+   "FPGA",
+   "board oscillator (100 MHz on the Arty A7) -> exactly 50 MHz; produces pll_locked",
+   "external 50 MHz clock pad (or an ASIC PLL macro)"
+  ],
+  [
+   "pll_locked_i",
+   "FPGA/ASIC",
+   "lock status of the clock generator; holds reset",
+   "real PLL lock if a PLL macro is used, else tie 1"
+  ],
+  [
+   "IOBUF / tri-state for scl_pad, sda_pad",
+   "FPGA",
+   "assign pad = drive_low ? 1b0 : 1bz (open-drain)",
+   "library open-drain I/O pad cell"
+  ],
+  [
+   "arm_sw_i",
+   "bring-up",
+   "arm switch used when no CPU exists (phase 1)",
+   "tie 0; firmware arms through SAFE.CTRL"
+  ],
+  [
+   "bench_en_i, bench_sel_i[1:0]",
+   "bring-up",
+   "open-loop motor bench table in actuation_subsystem",
+   "tie 0 (logic is optimised away) or keep as test-mode pins"
+  ],
+  [
+   "HW_ONLY parameter and the DEF_EN plumbing",
+   "FPGA",
+   "phase-1 mode: Wing A runs with no CPU (blocks reset to enabled)",
+   "HW_ONLY = 0; DEF_EN constants removed or left at 0"
+  ],
+  [
+   "dbg_o[7:0] LEDs",
+   "FPGA/ASIC",
+   "status LEDs: fault, armed, calibrated",
+   "spare debug pins or removed"
+  ],
+  [
+   "duty_l_o, duty_r_o, core_sleep_o, double_fault_seen_o",
+   "FPGA",
+   "debug taps probed by the ILA",
+   "unconnected"
+  ],
+  [
+   "Vivado ILA / VIO cores and mark_debug attributes",
+   "FPGA",
+   "on-chip logic analyser",
+   "none"
+  ],
+  [
+   "$readmemh ROM initialisation (rom_dp INIT_FILE)",
+   "FPGA/sim",
+   "ROM contents loaded at configuration/simulation start",
+   "ROM macro or mask ROM; firmware.hex becomes the programming file"
+  ],
+  [
+   "BRAM inference for rom_dp / ram_sp",
+   "FPGA",
+   "block RAM",
+   "SRAM macros or flop arrays (area decision in the layout phase)"
+  ],
+  [
+   "prim_clock_gating pass-through",
+   "FPGA",
+   "Ibex clock gate replaced by a wire",
+   "library clock-gating cell, or keep the wire"
+  ],
+  [
+   "RegFile = RegFileFF / RegFileFPGA",
+   "FPGA",
+   "Ibex register file in flip-flops / distributed RAM",
+   "RegFileLatch (needs clock gating) or keep flip-flops"
+  ],
+  [
+   "test_en_i, scan_rst_ni on ibex_top",
+   "DFT",
+   "tied 0 / 1 in FPGA",
+   "scan chain connections in the layout flow"
+  ],
+  [
+   "rst_n_in button debounce by hold counter",
+   "FPGA/ASIC",
+   "the 255-cycle hold in clk_rst_gen",
+   "kept (power-on reset)"
+  ]
+ ]
+}

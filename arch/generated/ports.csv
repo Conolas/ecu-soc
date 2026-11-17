@@ -1,0 +1,223 @@
+block,port,dir,width,format,net,peer,class,description
+clk_rst_gen,clk_in,in,1,clock,clk_in,TOP.clk_in,core,"board clock, already 50 MHz"
+clk_rst_gen,rst_n_in,in,1,level,rst_n_in,TOP.rst_n_in,core,"external reset button, active-low, ASYNC, may bounce"
+clk_rst_gen,pll_locked_i,in,1,level,pll_locked_i,TOP.pll_locked_i,fpga,clock-generator lock (tie 1 if none)
+clk_rst_gen,clk,out,1,clock,clk,timer_unit.clk i2c_sensor_subsystem.clk sensor_pipeline.clk hw_pid_accel.clk actuation_subsystem.clk safety_fault_monitor.clk rom_dp.clk ram_sp.clk bus_interconnect.clk cpu_subsystem.clk,core,= clk_in
+clk_rst_gen,rst_n,out,1,level,rst_n,timer_unit.rst_n i2c_sensor_subsystem.rst_n sensor_pipeline.rst_n hw_pid_accel.rst_n actuation_subsystem.rst_n safety_fault_monitor.rst_n bus_interconnect.rst_n cpu_subsystem.rst_n,core,"active-low; asserted asynchronously, released synchronously"
+timer_unit,clk,in,1,clock,clk,clk_rst_gen.clk,core,50 MHz system clock
+timer_unit,rst_n,in,1,level,rst_n,clk_rst_gen.rst_n,core,"active-low reset, synchronous release"
+timer_unit,s_sel_i,in,1,pulse,tmr_sel,bus_interconnect.tmr_sel_o,core,access this cycle (exactly one cycle per access)
+timer_unit,s_we_i,in,1,level,tmr_we,bus_interconnect.tmr_we_o,core,"1 = write, 0 = read"
+timer_unit,s_be_i,in,4,mask,tmr_be,bus_interconnect.tmr_be_o,core,byte enables (register banks may ignore; RAM must honour)
+timer_unit,s_addr_i,in,12,byte offset,tmr_addr,bus_interconnect.tmr_addr_o,core,"byte offset inside the region; word aligned, use [11:2]"
+timer_unit,s_wdata_i,in,32,word,tmr_wdata,bus_interconnect.tmr_wdata_o,core,write data
+timer_unit,s_rdata_o,out,32,word,tmr_rdata,bus_interconnect.tmr_rdata_i,core,"read data, REGISTERED: valid the cycle after s_sel_i"
+timer_unit,sched_busy_i,in,1,level,imu_busy,i2c_sensor_subsystem.imu_busy_o,core,imu_busy: still reading when the next tick fires => overrun
+timer_unit,control_tick_o,out,1,pulse,control_tick,i2c_sensor_subsystem.control_tick_i sensor_pipeline.control_tick_i safety_fault_monitor.control_tick_i,core,one clk cycle every TICK_PERIOD cycles (about 512 Hz)
+timer_unit,irq_timer_o,out,1,level,irq_timer,cpu_subsystem.irq_timer_i,core,set every IRQ_DIV ticks; cleared by W1C
+i2c_sensor_subsystem,clk,in,1,clock,clk,clk_rst_gen.clk,core,50 MHz system clock
+i2c_sensor_subsystem,rst_n,in,1,level,rst_n,clk_rst_gen.rst_n,core,"active-low reset, synchronous release"
+i2c_sensor_subsystem,s_sel_i,in,1,pulse,i2c_sel,bus_interconnect.i2c_sel_o,core,access this cycle (exactly one cycle per access)
+i2c_sensor_subsystem,s_we_i,in,1,level,i2c_we,bus_interconnect.i2c_we_o,core,"1 = write, 0 = read"
+i2c_sensor_subsystem,s_be_i,in,4,mask,i2c_be,bus_interconnect.i2c_be_o,core,byte enables (register banks may ignore; RAM must honour)
+i2c_sensor_subsystem,s_addr_i,in,12,byte offset,i2c_addr,bus_interconnect.i2c_addr_o,core,"byte offset inside the region; word aligned, use [11:2]"
+i2c_sensor_subsystem,s_wdata_i,in,32,word,i2c_wdata,bus_interconnect.i2c_wdata_o,core,write data
+i2c_sensor_subsystem,s_rdata_o,out,32,word,i2c_rdata,bus_interconnect.i2c_rdata_i,core,"read data, REGISTERED: valid the cycle after s_sel_i"
+i2c_sensor_subsystem,control_tick_i,in,1,pulse,control_tick,timer_unit.control_tick_o,core,start a sample read
+i2c_sensor_subsystem,scl_i,in,1,level,scl_i,TOP.scl_i,core,raw SCL pin (2-FF synchronised inside)
+i2c_sensor_subsystem,sda_i,in,1,level,sda_i,TOP.sda_i,core,raw SDA pin (2-FF synchronised inside)
+i2c_sensor_subsystem,scl_drive_low_o,out,1,level,scl_drive_low_o,TOP.scl_drive_low_o,core,"1 = pull SCL low, 0 = release (open-drain)"
+i2c_sensor_subsystem,sda_drive_low_o,out,1,level,sda_drive_low_o,TOP.sda_drive_low_o,core,"1 = pull SDA low, 0 = release"
+i2c_sensor_subsystem,imu_valid_o,out,1,pulse,imu_valid,sensor_pipeline.imu_valid_i safety_fault_monitor.imu_valid_i,core,complete 14-byte sample ready
+i2c_sensor_subsystem,imu_ax_o,out,16,int16,imu_ax,sensor_pipeline.imu_ax_i,core,"signed raw ax, stable after imu_valid_o"
+i2c_sensor_subsystem,imu_ay_o,out,16,int16,imu_ay,sensor_pipeline.imu_ay_i,core,"signed raw ay, stable after imu_valid_o"
+i2c_sensor_subsystem,imu_az_o,out,16,int16,imu_az,sensor_pipeline.imu_az_i,core,"signed raw az, stable after imu_valid_o"
+i2c_sensor_subsystem,imu_gx_o,out,16,int16,imu_gx,sensor_pipeline.imu_gx_i,core,"signed raw gx, stable after imu_valid_o"
+i2c_sensor_subsystem,imu_gy_o,out,16,int16,imu_gy,sensor_pipeline.imu_gy_i,core,"signed raw gy, stable after imu_valid_o"
+i2c_sensor_subsystem,imu_gz_o,out,16,int16,imu_gz,sensor_pipeline.imu_gz_i,core,"signed raw gz, stable after imu_valid_o"
+i2c_sensor_subsystem,imu_busy_o,out,1,level,imu_busy,timer_unit.sched_busy_i,core,high from tick until imu_valid_o or imu_err_o
+i2c_sensor_subsystem,imu_err_o,out,1,pulse,imu_err,safety_fault_monitor.imu_err_i,core,transaction failed (NACK / timeout)
+i2c_sensor_subsystem,imu_init_done_o,out,1,level,imu_init_done,sensor_pipeline.imu_init_done_i safety_fault_monitor.imu_init_done_i,core,MPU-6050 configured
+sensor_pipeline,clk,in,1,clock,clk,clk_rst_gen.clk,core,50 MHz system clock
+sensor_pipeline,rst_n,in,1,level,rst_n,clk_rst_gen.rst_n,core,"active-low reset, synchronous release"
+sensor_pipeline,s_sel_i,in,1,pulse,sens_sel,bus_interconnect.sens_sel_o,core,access this cycle (exactly one cycle per access)
+sensor_pipeline,s_we_i,in,1,level,sens_we,bus_interconnect.sens_we_o,core,"1 = write, 0 = read"
+sensor_pipeline,s_be_i,in,4,mask,sens_be,bus_interconnect.sens_be_o,core,byte enables (register banks may ignore; RAM must honour)
+sensor_pipeline,s_addr_i,in,12,byte offset,sens_addr,bus_interconnect.sens_addr_o,core,"byte offset inside the region; word aligned, use [11:2]"
+sensor_pipeline,s_wdata_i,in,32,word,sens_wdata,bus_interconnect.sens_wdata_o,core,write data
+sensor_pipeline,s_rdata_o,out,32,word,sens_rdata,bus_interconnect.sens_rdata_i,core,"read data, REGISTERED: valid the cycle after s_sel_i"
+sensor_pipeline,control_tick_i,in,1,pulse,control_tick,timer_unit.control_tick_o,core,ACR-2: time base for DATA_FRESH (sample within last 2 ticks)
+sensor_pipeline,imu_valid_i,in,1,pulse,imu_valid,i2c_sensor_subsystem.imu_valid_o,core,sample ready
+sensor_pipeline,imu_ax_i,in,16,int16,imu_ax,i2c_sensor_subsystem.imu_ax_o,core,signed raw ax
+sensor_pipeline,imu_ay_i,in,16,int16,imu_ay,i2c_sensor_subsystem.imu_ay_o,core,signed raw ay
+sensor_pipeline,imu_az_i,in,16,int16,imu_az,i2c_sensor_subsystem.imu_az_o,core,signed raw az
+sensor_pipeline,imu_gx_i,in,16,int16,imu_gx,i2c_sensor_subsystem.imu_gx_o,core,signed raw gx
+sensor_pipeline,imu_gy_i,in,16,int16,imu_gy,i2c_sensor_subsystem.imu_gy_o,core,signed raw gy
+sensor_pipeline,imu_gz_i,in,16,int16,imu_gz,i2c_sensor_subsystem.imu_gz_o,core,signed raw gz
+sensor_pipeline,imu_init_done_i,in,1,level,imu_init_done,i2c_sensor_subsystem.imu_init_done_o,core,calibration waits for this
+sensor_pipeline,setpoint_i,in,32,Q16.16 rad,setpoint,hw_pid_accel.setpoint_o,core,balance setpoint from PID bank
+sensor_pipeline,pipe_valid_o,out,1,pulse,pipe_valid,hw_pid_accel.err_valid_i safety_fault_monitor.pipe_valid_i,core,"angle_o, err_o, rate_o valid together"
+sensor_pipeline,angle_o,out,32,Q16.16 rad,angle,safety_fault_monitor.angle_i,core,filtered + trimmed; + = leaning forward
+sensor_pipeline,err_o,out,32,Q16.16,err,hw_pid_accel.err_i,core,setpoint_i - angle
+sensor_pipeline,rate_o,out,32,Q16.16 rad/s,rate,hw_pid_accel.rate_i,core,"filtered, bias-corrected"
+sensor_pipeline,calib_done_o,out,1,level,calib_done,safety_fault_monitor.calib_done_i,core,gyro bias captured
+hw_pid_accel,clk,in,1,clock,clk,clk_rst_gen.clk,core,50 MHz system clock
+hw_pid_accel,rst_n,in,1,level,rst_n,clk_rst_gen.rst_n,core,"active-low reset, synchronous release"
+hw_pid_accel,s_sel_i,in,1,pulse,pid_sel,bus_interconnect.pid_sel_o,core,access this cycle (exactly one cycle per access)
+hw_pid_accel,s_we_i,in,1,level,pid_we,bus_interconnect.pid_we_o,core,"1 = write, 0 = read"
+hw_pid_accel,s_be_i,in,4,mask,pid_be,bus_interconnect.pid_be_o,core,byte enables (register banks may ignore; RAM must honour)
+hw_pid_accel,s_addr_i,in,12,byte offset,pid_addr,bus_interconnect.pid_addr_o,core,"byte offset inside the region; word aligned, use [11:2]"
+hw_pid_accel,s_wdata_i,in,32,word,pid_wdata,bus_interconnect.pid_wdata_o,core,write data
+hw_pid_accel,s_rdata_o,out,32,word,pid_rdata,bus_interconnect.pid_rdata_i,core,"read data, REGISTERED: valid the cycle after s_sel_i"
+hw_pid_accel,err_valid_i,in,1,pulse,pipe_valid,sensor_pipeline.pipe_valid_o,core,pipe_valid
+hw_pid_accel,err_i,in,32,Q16.16,err,sensor_pipeline.err_o,core,setpoint - angle
+hw_pid_accel,rate_i,in,32,Q16.16 rad/s,rate,sensor_pipeline.rate_o,core,filtered rate
+hw_pid_accel,run_i,in,1,level,pwm_enable,safety_fault_monitor.pwm_enable_o,core,"pwm_enable: 0 => output 0, integrator cleared"
+hw_pid_accel,pwm_cmd_o,out,32,"Q16.16 [-1,+1]",pwm_cmd,actuation_subsystem.cmd_i,core,clamped to +-OUT_LIMIT
+hw_pid_accel,pwm_cmd_valid_o,out,1,pulse,pwm_cmd_valid,actuation_subsystem.cmd_valid_i,core,new command (also pulses with 0 when not running)
+hw_pid_accel,pid_sat_o,out,1,level,pid_sat,safety_fault_monitor.pid_sat_i,core,last output was clamped
+hw_pid_accel,setpoint_o,out,32,Q16.16 rad,setpoint,sensor_pipeline.setpoint_i,core,SETPOINT register -> sensor_pipeline
+actuation_subsystem,clk,in,1,clock,clk,clk_rst_gen.clk,core,50 MHz system clock
+actuation_subsystem,rst_n,in,1,level,rst_n,clk_rst_gen.rst_n,core,"active-low reset, synchronous release"
+actuation_subsystem,s_sel_i,in,1,pulse,pwm_sel,bus_interconnect.pwm_sel_o,core,access this cycle (exactly one cycle per access)
+actuation_subsystem,s_we_i,in,1,level,pwm_we,bus_interconnect.pwm_we_o,core,"1 = write, 0 = read"
+actuation_subsystem,s_be_i,in,4,mask,pwm_be,bus_interconnect.pwm_be_o,core,byte enables (register banks may ignore; RAM must honour)
+actuation_subsystem,s_addr_i,in,12,byte offset,pwm_addr,bus_interconnect.pwm_addr_o,core,"byte offset inside the region; word aligned, use [11:2]"
+actuation_subsystem,s_wdata_i,in,32,word,pwm_wdata,bus_interconnect.pwm_wdata_o,core,write data
+actuation_subsystem,s_rdata_o,out,32,word,pwm_rdata,bus_interconnect.pwm_rdata_i,core,"read data, REGISTERED: valid the cycle after s_sel_i"
+actuation_subsystem,cmd_valid_i,in,1,pulse,pwm_cmd_valid,hw_pid_accel.pwm_cmd_valid_o,core,new command (about 512 Hz)
+actuation_subsystem,cmd_i,in,32,"Q16.16 [-1,+1]",pwm_cmd,hw_pid_accel.pwm_cmd_o,core,balance command from PID
+actuation_subsystem,pwm_enable_i,in,1,level,pwm_enable,safety_fault_monitor.pwm_enable_o,core,from safety: 0 => everything off
+actuation_subsystem,bench_en_i,in,1,level,bench_en_i,TOP.bench_en_i,bringup,"1 = ignore cmd_i, use bench table"
+actuation_subsystem,bench_sel_i,in,2,code,bench_sel_i,TOP.bench_sel_i,bringup,"00 -> 0, 01 -> +0.25, 10 -> -0.25, 11 -> +0.5"
+actuation_subsystem,l_rpwm_o,out,1,level,l_rpwm_o,TOP.l_rpwm_o,core,left BTS7960 RPWM
+actuation_subsystem,l_lpwm_o,out,1,level,l_lpwm_o,TOP.l_lpwm_o,core,left BTS7960 LPWM
+actuation_subsystem,l_r_en_o,out,1,level,l_r_en_o,TOP.l_r_en_o,core,left BTS7960 R_EN
+actuation_subsystem,l_l_en_o,out,1,level,l_l_en_o,TOP.l_l_en_o,core,left BTS7960 L_EN
+actuation_subsystem,r_rpwm_o,out,1,level,r_rpwm_o,TOP.r_rpwm_o,core,right BTS7960 RPWM
+actuation_subsystem,r_lpwm_o,out,1,level,r_lpwm_o,TOP.r_lpwm_o,core,right BTS7960 LPWM
+actuation_subsystem,r_r_en_o,out,1,level,r_r_en_o,TOP.r_r_en_o,core,right BTS7960 R_EN
+actuation_subsystem,r_l_en_o,out,1,level,r_l_en_o,TOP.r_l_en_o,core,right BTS7960 L_EN
+actuation_subsystem,duty_l_o,out,16,counts,duty_l,(debug tap),dbg,current left duty counts (debug)
+actuation_subsystem,duty_r_o,out,16,counts,duty_r,(debug tap),dbg,current right duty counts (debug)
+safety_fault_monitor,clk,in,1,clock,clk,clk_rst_gen.clk,core,50 MHz system clock
+safety_fault_monitor,rst_n,in,1,level,rst_n,clk_rst_gen.rst_n,core,"active-low reset, synchronous release"
+safety_fault_monitor,s_sel_i,in,1,pulse,saf_sel,bus_interconnect.saf_sel_o,core,access this cycle (exactly one cycle per access)
+safety_fault_monitor,s_we_i,in,1,level,saf_we,bus_interconnect.saf_we_o,core,"1 = write, 0 = read"
+safety_fault_monitor,s_be_i,in,4,mask,saf_be,bus_interconnect.saf_be_o,core,byte enables (register banks may ignore; RAM must honour)
+safety_fault_monitor,s_addr_i,in,12,byte offset,saf_addr,bus_interconnect.saf_addr_o,core,"byte offset inside the region; word aligned, use [11:2]"
+safety_fault_monitor,s_wdata_i,in,32,word,saf_wdata,bus_interconnect.saf_wdata_o,core,write data
+safety_fault_monitor,s_rdata_o,out,32,word,saf_rdata,bus_interconnect.saf_rdata_i,core,"read data, REGISTERED: valid the cycle after s_sel_i"
+safety_fault_monitor,control_tick_i,in,1,pulse,control_tick,timer_unit.control_tick_o,core,time base for time-outs and watchdog
+safety_fault_monitor,imu_valid_i,in,1,pulse,imu_valid,i2c_sensor_subsystem.imu_valid_o,core,sample received
+safety_fault_monitor,imu_err_i,in,1,pulse,imu_err,i2c_sensor_subsystem.imu_err_o,core,I2C transaction failed
+safety_fault_monitor,imu_init_done_i,in,1,level,imu_init_done,i2c_sensor_subsystem.imu_init_done_o,core,sensor configured
+safety_fault_monitor,calib_done_i,in,1,level,calib_done,sensor_pipeline.calib_done_o,core,gyro bias captured
+safety_fault_monitor,pipe_valid_i,in,1,pulse,pipe_valid,sensor_pipeline.pipe_valid_o,core,angle_i valid
+safety_fault_monitor,angle_i,in,32,Q16.16 rad,angle,sensor_pipeline.angle_o,core,filtered angle
+safety_fault_monitor,pid_sat_i,in,1,level,pid_sat,hw_pid_accel.pid_sat_o,core,PID output clamped
+safety_fault_monitor,estop_n_i,in,1,level,estop_n_i,TOP.estop_n_i,core,"hardware E-stop, active-low, raw (synchronised inside)"
+safety_fault_monitor,arm_sw_i,in,1,level,arm_sw_i,TOP.arm_sw_i,bringup,"arm switch, raw (synchronised inside); tie 0 in final SoC"
+safety_fault_monitor,pwm_enable_o,out,1,level,pwm_enable,hw_pid_accel.run_i actuation_subsystem.pwm_enable_i,core,1 = motors allowed; default 0; registered
+safety_fault_monitor,irq_fault_o,out,1,level,irq_fault,cpu_subsystem.irq_fault_i,core,IRQ_EN & any sticky fault
+safety_fault_monitor,dbg_o,out,8,LED bits,dbg_o,TOP.dbg_o,dbg,"[3:0]={calib_done,init_done,fault_any,pwm_enable}, [7:4]=DBG_OUT[7:4]"
+rom_dp,clk,in,1,clock,clk,clk_rst_gen.clk,core,50 MHz
+rom_dp,ia_req_i,in,1,pulse,rom_ia_req,bus_interconnect.rom_ia_req_o,core,instruction fetch request
+rom_dp,ia_addr_i,in,13,byte addr,rom_ia_addr,bus_interconnect.rom_ia_addr_o,core,use [12:2] as word index
+rom_dp,ia_rdata_o,out,32,word,rom_ia_rdata,bus_interconnect.rom_ia_rdata_i,core,registered: valid the cycle after ia_req_i
+rom_dp,s_sel_i,in,1,pulse,rom_sel,bus_interconnect.rom_sel_o,core,data-side read request
+rom_dp,s_addr_i,in,13,byte addr,rom_addr,bus_interconnect.rom_addr_o,core,data-side address
+rom_dp,s_rdata_o,out,32,word,rom_rdata,bus_interconnect.rom_rdata_i,core,registered
+ram_sp,clk,in,1,clock,clk,clk_rst_gen.clk,core,50 MHz
+ram_sp,s_sel_i,in,1,pulse,ram_sel,bus_interconnect.ram_sel_o,core,access this cycle (exactly one cycle per access)
+ram_sp,s_we_i,in,1,level,ram_we,bus_interconnect.ram_we_o,core,"1 = write, 0 = read"
+ram_sp,s_be_i,in,4,mask,ram_be,bus_interconnect.ram_be_o,core,byte enables (register banks may ignore; RAM must honour)
+ram_sp,s_addr_i,in,12,byte offset,ram_addr,bus_interconnect.ram_addr_o,core,"byte offset inside the region; word aligned, use [11:2]"
+ram_sp,s_wdata_i,in,32,word,ram_wdata,bus_interconnect.ram_wdata_o,core,write data
+ram_sp,s_rdata_o,out,32,word,ram_rdata,bus_interconnect.ram_rdata_i,core,"read data, REGISTERED: valid the cycle after s_sel_i"
+bus_interconnect,clk,in,1,clock,clk,clk_rst_gen.clk,core,50 MHz system clock
+bus_interconnect,rst_n,in,1,level,rst_n,clk_rst_gen.rst_n,core,"active-low reset, synchronous release"
+bus_interconnect,instr_req_i,in,1,level,instr_req,cpu_subsystem.instr_req_o,core,from Ibex
+bus_interconnect,instr_addr_i,in,32,byte addr,instr_addr,cpu_subsystem.instr_addr_o,core,from Ibex
+bus_interconnect,instr_gnt_o,out,1,level,instr_gnt,cpu_subsystem.instr_gnt_i,core,= instr_req_i (same cycle)
+bus_interconnect,instr_rvalid_o,out,1,pulse,instr_rvalid,cpu_subsystem.instr_rvalid_i,core,one cycle after the request
+bus_interconnect,instr_rdata_o,out,32,word,instr_rdata,cpu_subsystem.instr_rdata_i,core,ROM word
+bus_interconnect,instr_err_o,out,1,level,instr_err,cpu_subsystem.instr_err_i,core,fetch outside ROM
+bus_interconnect,data_req_i,in,1,level,data_req,cpu_subsystem.data_req_o,core,from Ibex
+bus_interconnect,data_we_i,in,1,level,data_we,cpu_subsystem.data_we_o,core,1 = store
+bus_interconnect,data_be_i,in,4,mask,data_be,cpu_subsystem.data_be_o,core,byte enables
+bus_interconnect,data_addr_i,in,32,byte addr,data_addr,cpu_subsystem.data_addr_o,core,from Ibex
+bus_interconnect,data_wdata_i,in,32,word,data_wdata,cpu_subsystem.data_wdata_o,core,from Ibex
+bus_interconnect,data_gnt_o,out,1,level,data_gnt,cpu_subsystem.data_gnt_i,core,= data_req_i (same cycle)
+bus_interconnect,data_rvalid_o,out,1,pulse,data_rvalid,cpu_subsystem.data_rvalid_i,core,"one cycle later, reads AND writes"
+bus_interconnect,data_rdata_o,out,32,word,data_rdata,cpu_subsystem.data_rdata_i,core,registered read mux
+bus_interconnect,data_err_o,out,1,level,data_err,cpu_subsystem.data_err_i,core,unmapped address or write to ROM
+bus_interconnect,rom_ia_req_o,out,1,pulse,rom_ia_req,rom_dp.ia_req_i,core,ROM instruction port request
+bus_interconnect,rom_ia_addr_o,out,13,byte addr,rom_ia_addr,rom_dp.ia_addr_i,core,ROM instruction address
+bus_interconnect,rom_ia_rdata_i,in,32,word,rom_ia_rdata,rom_dp.ia_rdata_o,core,ROM instruction data
+bus_interconnect,rom_sel_o,out,1,pulse,rom_sel,rom_dp.s_sel_i,core,ROM data-read select
+bus_interconnect,rom_addr_o,out,13,byte addr,rom_addr,rom_dp.s_addr_i,core,ROM data address
+bus_interconnect,rom_rdata_i,in,32,word,rom_rdata,rom_dp.s_rdata_o,core,ROM data
+bus_interconnect,ram_sel_o,out,1,pulse,ram_sel,ram_sp.s_sel_i,core,RAM select
+bus_interconnect,ram_we_o,out,1,level,ram_we,ram_sp.s_we_i,core,RAM write
+bus_interconnect,ram_be_o,out,4,mask,ram_be,ram_sp.s_be_i,core,RAM byte enables
+bus_interconnect,ram_addr_o,out,12,byte offset,ram_addr,ram_sp.s_addr_i,core,RAM address
+bus_interconnect,ram_wdata_o,out,32,word,ram_wdata,ram_sp.s_wdata_i,core,RAM write data
+bus_interconnect,ram_rdata_i,in,32,word,ram_rdata,ram_sp.s_rdata_o,core,RAM read data
+bus_interconnect,tmr_sel_o,out,1,pulse,tmr_sel,timer_unit.s_sel_i,core,TMR bank slave bus
+bus_interconnect,tmr_we_o,out,1,level,tmr_we,timer_unit.s_we_i,core,TMR bank slave bus
+bus_interconnect,tmr_be_o,out,4,mask,tmr_be,timer_unit.s_be_i,core,TMR bank slave bus
+bus_interconnect,tmr_addr_o,out,12,byte offset,tmr_addr,timer_unit.s_addr_i,core,TMR bank slave bus
+bus_interconnect,tmr_wdata_o,out,32,word,tmr_wdata,timer_unit.s_wdata_i,core,TMR bank slave bus
+bus_interconnect,tmr_rdata_i,in,32,word,tmr_rdata,timer_unit.s_rdata_o,core,TMR bank slave bus
+bus_interconnect,i2c_sel_o,out,1,pulse,i2c_sel,i2c_sensor_subsystem.s_sel_i,core,I2C bank slave bus
+bus_interconnect,i2c_we_o,out,1,level,i2c_we,i2c_sensor_subsystem.s_we_i,core,I2C bank slave bus
+bus_interconnect,i2c_be_o,out,4,mask,i2c_be,i2c_sensor_subsystem.s_be_i,core,I2C bank slave bus
+bus_interconnect,i2c_addr_o,out,12,byte offset,i2c_addr,i2c_sensor_subsystem.s_addr_i,core,I2C bank slave bus
+bus_interconnect,i2c_wdata_o,out,32,word,i2c_wdata,i2c_sensor_subsystem.s_wdata_i,core,I2C bank slave bus
+bus_interconnect,i2c_rdata_i,in,32,word,i2c_rdata,i2c_sensor_subsystem.s_rdata_o,core,I2C bank slave bus
+bus_interconnect,sens_sel_o,out,1,pulse,sens_sel,sensor_pipeline.s_sel_i,core,SENS bank slave bus
+bus_interconnect,sens_we_o,out,1,level,sens_we,sensor_pipeline.s_we_i,core,SENS bank slave bus
+bus_interconnect,sens_be_o,out,4,mask,sens_be,sensor_pipeline.s_be_i,core,SENS bank slave bus
+bus_interconnect,sens_addr_o,out,12,byte offset,sens_addr,sensor_pipeline.s_addr_i,core,SENS bank slave bus
+bus_interconnect,sens_wdata_o,out,32,word,sens_wdata,sensor_pipeline.s_wdata_i,core,SENS bank slave bus
+bus_interconnect,sens_rdata_i,in,32,word,sens_rdata,sensor_pipeline.s_rdata_o,core,SENS bank slave bus
+bus_interconnect,pid_sel_o,out,1,pulse,pid_sel,hw_pid_accel.s_sel_i,core,PID bank slave bus
+bus_interconnect,pid_we_o,out,1,level,pid_we,hw_pid_accel.s_we_i,core,PID bank slave bus
+bus_interconnect,pid_be_o,out,4,mask,pid_be,hw_pid_accel.s_be_i,core,PID bank slave bus
+bus_interconnect,pid_addr_o,out,12,byte offset,pid_addr,hw_pid_accel.s_addr_i,core,PID bank slave bus
+bus_interconnect,pid_wdata_o,out,32,word,pid_wdata,hw_pid_accel.s_wdata_i,core,PID bank slave bus
+bus_interconnect,pid_rdata_i,in,32,word,pid_rdata,hw_pid_accel.s_rdata_o,core,PID bank slave bus
+bus_interconnect,pwm_sel_o,out,1,pulse,pwm_sel,actuation_subsystem.s_sel_i,core,PWM bank slave bus
+bus_interconnect,pwm_we_o,out,1,level,pwm_we,actuation_subsystem.s_we_i,core,PWM bank slave bus
+bus_interconnect,pwm_be_o,out,4,mask,pwm_be,actuation_subsystem.s_be_i,core,PWM bank slave bus
+bus_interconnect,pwm_addr_o,out,12,byte offset,pwm_addr,actuation_subsystem.s_addr_i,core,PWM bank slave bus
+bus_interconnect,pwm_wdata_o,out,32,word,pwm_wdata,actuation_subsystem.s_wdata_i,core,PWM bank slave bus
+bus_interconnect,pwm_rdata_i,in,32,word,pwm_rdata,actuation_subsystem.s_rdata_o,core,PWM bank slave bus
+bus_interconnect,saf_sel_o,out,1,pulse,saf_sel,safety_fault_monitor.s_sel_i,core,SAF bank slave bus
+bus_interconnect,saf_we_o,out,1,level,saf_we,safety_fault_monitor.s_we_i,core,SAF bank slave bus
+bus_interconnect,saf_be_o,out,4,mask,saf_be,safety_fault_monitor.s_be_i,core,SAF bank slave bus
+bus_interconnect,saf_addr_o,out,12,byte offset,saf_addr,safety_fault_monitor.s_addr_i,core,SAF bank slave bus
+bus_interconnect,saf_wdata_o,out,32,word,saf_wdata,safety_fault_monitor.s_wdata_i,core,SAF bank slave bus
+bus_interconnect,saf_rdata_i,in,32,word,saf_rdata,safety_fault_monitor.s_rdata_o,core,SAF bank slave bus
+cpu_subsystem,clk,in,1,clock,clk,clk_rst_gen.clk,core,50 MHz system clock
+cpu_subsystem,rst_n,in,1,level,rst_n,clk_rst_gen.rst_n,core,"active-low reset, synchronous release"
+cpu_subsystem,instr_req_o,out,1,level,instr_req,bus_interconnect.instr_req_i,core,instruction request
+cpu_subsystem,instr_gnt_i,in,1,level,instr_gnt,bus_interconnect.instr_gnt_o,core,granted
+cpu_subsystem,instr_rvalid_i,in,1,pulse,instr_rvalid,bus_interconnect.instr_rvalid_o,core,response valid
+cpu_subsystem,instr_addr_o,out,32,byte addr,instr_addr,bus_interconnect.instr_addr_i,core,fetch address
+cpu_subsystem,instr_rdata_i,in,32,word,instr_rdata,bus_interconnect.instr_rdata_o,core,instruction
+cpu_subsystem,instr_err_i,in,1,level,instr_err,bus_interconnect.instr_err_o,core,bus error
+cpu_subsystem,data_req_o,out,1,level,data_req,bus_interconnect.data_req_i,core,data request
+cpu_subsystem,data_gnt_i,in,1,level,data_gnt,bus_interconnect.data_gnt_o,core,granted
+cpu_subsystem,data_rvalid_i,in,1,pulse,data_rvalid,bus_interconnect.data_rvalid_o,core,response valid
+cpu_subsystem,data_we_o,out,1,level,data_we,bus_interconnect.data_we_i,core,store
+cpu_subsystem,data_be_o,out,4,mask,data_be,bus_interconnect.data_be_i,core,byte enables
+cpu_subsystem,data_addr_o,out,32,byte addr,data_addr,bus_interconnect.data_addr_i,core,address
+cpu_subsystem,data_wdata_o,out,32,word,data_wdata,bus_interconnect.data_wdata_i,core,write data
+cpu_subsystem,data_rdata_i,in,32,word,data_rdata,bus_interconnect.data_rdata_o,core,read data
+cpu_subsystem,data_err_i,in,1,level,data_err,bus_interconnect.data_err_o,core,bus error
+cpu_subsystem,irq_timer_i,in,1,level,irq_timer,timer_unit.irq_timer_o,core,"machine timer interrupt (mcause 7, vector 0x1C)"
+cpu_subsystem,irq_fault_i,in,1,level,irq_fault,safety_fault_monitor.irq_fault_o,core,"machine external interrupt (mcause 11, vector 0x2C)"
+cpu_subsystem,core_sleep_o,out,1,level,cpu_core_sleep,(debug tap),dbg,high while the core sleeps (wfi)
+cpu_subsystem,double_fault_seen_o,out,1,level,cpu_double_fault,(debug tap),dbg,exception inside an exception handler

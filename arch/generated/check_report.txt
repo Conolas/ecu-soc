@@ -1,0 +1,37 @@
+PASS  net names unique (112 nets)
+PASS  every one of the 222 block ports is connected to exactly one net
+PASS  every one of the 20 top-level pins is connected to exactly one net
+PASS  108 nets have loads; 4 are declared debug taps (no functional load)
+PASS  port naming rule (_i / _o) holds everywhere
+PASS  bank bus ports follow _o/_i too
+PASS  TMR: 7 registers, offsets unique, word aligned, inside the 4 KB window
+PASS  TMR: ID register at 0x00 = 0x54494D01
+PASS  TMR: ID ASCII "TIM" + version 01
+PASS  I2C: 13 registers, offsets unique, word aligned, inside the 4 KB window
+PASS  I2C: ID register at 0x00 = 0x49324301
+PASS  I2C: ID ASCII "I2C" + version 01
+PASS  SENS: 13 registers, offsets unique, word aligned, inside the 4 KB window
+PASS  SENS: ID register at 0x00 = 0x53454E01
+PASS  SENS: ID ASCII "SEN" + version 01
+PASS  PID: 13 registers, offsets unique, word aligned, inside the 4 KB window
+PASS  PID: ID register at 0x00 = 0x50494401
+PASS  PID: ID ASCII "PID" + version 01
+PASS  PWM: 12 registers, offsets unique, word aligned, inside the 4 KB window
+PASS  PWM: ID register at 0x00 = 0x50574D01
+PASS  PWM: ID ASCII "PWM" + version 01
+PASS  SAFE: 11 registers, offsets unique, word aligned, inside the 4 KB window
+PASS  SAFE: ID register at 0x00 = 0x53414601
+PASS  SAFE: ID ASCII "SAF" + version 01
+PASS  memory map: 8 windows, no overlap
+PASS  every window is aligned to its size (decode = top address bits only)
+PASS  contract section 6 cross-check: all 23 contract signals present, every contract receiver is wired
+PASS  firmware header ecu_regs.h matches the model: all 69 registers at the right offsets
+PASS  timing: tick-to-pwm worst case 22550 cycles (0.451 ms) < tick period 97656 cycles (1.953 ms); margin 1.50 ms
+PASS  every RTL block has clk; rst_n on all except rom_dp and ram_sp (pure memories)
+PASS  bank TMR: timer_unit has the full slave bus
+PASS  bank I2C: i2c_sensor_subsystem has the full slave bus
+PASS  bank SENS: sensor_pipeline has the full slave bus
+PASS  bank PID: hw_pid_accel has the full slave bus
+PASS  bank PWM: actuation_subsystem has the full slave bus
+PASS  bank SAF: safety_fault_monitor has the full slave bus
+NOTE  vs contract v1.0: control_tick: extra receiver(s) ['sensor_pipeline'] (ACR)

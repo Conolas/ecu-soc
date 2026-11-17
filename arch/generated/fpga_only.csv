@@ -1,0 +1,17 @@
+item,class,what,ASIC / GDSII equivalent
+ecu_fpga_top (entire wrapper),FPGA,"board wrapper: pin buffers, clock generator, open-drain pad logic, LED drivers, constraints",replaced by the pad ring / ecu_asic_top
+fpga_clk_gen (MMCM/PLL),FPGA,board oscillator (100 MHz on the Arty A7) -> exactly 50 MHz; produces pll_locked,external 50 MHz clock pad (or an ASIC PLL macro)
+pll_locked_i,FPGA/ASIC,lock status of the clock generator; holds reset,"real PLL lock if a PLL macro is used, else tie 1"
+"IOBUF / tri-state for scl_pad, sda_pad",FPGA,assign pad = drive_low ? 1b0 : 1bz (open-drain),library open-drain I/O pad cell
+arm_sw_i,bring-up,arm switch used when no CPU exists (phase 1),tie 0; firmware arms through SAFE.CTRL
+"bench_en_i, bench_sel_i[1:0]",bring-up,open-loop motor bench table in actuation_subsystem,tie 0 (logic is optimised away) or keep as test-mode pins
+HW_ONLY parameter and the DEF_EN plumbing,FPGA,phase-1 mode: Wing A runs with no CPU (blocks reset to enabled),HW_ONLY = 0; DEF_EN constants removed or left at 0
+dbg_o[7:0] LEDs,FPGA/ASIC,"status LEDs: fault, armed, calibrated",spare debug pins or removed
+"duty_l_o, duty_r_o, core_sleep_o, double_fault_seen_o",FPGA,debug taps probed by the ILA,unconnected
+Vivado ILA / VIO cores and mark_debug attributes,FPGA,on-chip logic analyser,none
+$readmemh ROM initialisation (rom_dp INIT_FILE),FPGA/sim,ROM contents loaded at configuration/simulation start,ROM macro or mask ROM; firmware.hex becomes the programming file
+BRAM inference for rom_dp / ram_sp,FPGA,block RAM,SRAM macros or flop arrays (area decision in the layout phase)
+prim_clock_gating pass-through,FPGA,Ibex clock gate replaced by a wire,"library clock-gating cell, or keep the wire"
+RegFile = RegFileFF / RegFileFPGA,FPGA,Ibex register file in flip-flops / distributed RAM,RegFileLatch (needs clock gating) or keep flip-flops
+"test_en_i, scan_rst_ni on ibex_top",DFT,tied 0 / 1 in FPGA,scan chain connections in the layout flow
+rst_n_in button debounce by hold counter,FPGA/ASIC,the 255-cycle hold in clk_rst_gen,kept (power-on reset)
